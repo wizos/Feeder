@@ -4,6 +4,8 @@ before_script:
   - chmod +x ./gradlew
 
 build:
+  tags:
+    - android
   script:
     - ./gradlew assembleDebug
   artifacts:
@@ -11,6 +13,8 @@ build:
     - app/build/outputs/
 
 test:
+  tags:
+    - android
   script:
     - ./gradlew check
   artifacts:
