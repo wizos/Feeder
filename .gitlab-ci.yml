@@ -7,62 +7,16 @@ stages:
 before_script:
   - chmod +x ./gradlew
 
-assemble:
-  stage: Build
-  script:
-    - ./gradlew assembleDebug
-  artifacts:
-    paths:
-    - app/build/outputs/
 
-check:
-  stage: Build
-  script:
-    - ./gradlew check
-  artifacts:
-    paths:
-    - app/build/reports/
-    - app/build/test-results/
+#     - echo no | ${ANDROID_HOME}/tools/bin/avdmanager create avd -n test -t android-18 --abi google_apis/x86
 
+#"Compatibility Tests"
 android-25:
-  stage: "Compatibility Tests"
+  stage: Build
   script:
     - chmod +x scripts/android-wait-for-emulator
     - echo y | ${ANDROID_HOME}/tools/bin/sdkmanager "system-images;android-25;google_apis;x86"
-    - echo no | ${ANDROID_HOME}/tools/android create avd -n test -t android-25 --abi google_apis/x86
-    - ${ANDROID_HOME}/tools/emulator64-x86 -avd test -no-window -no-audio &
-    - scripts/android-wait-for-emulator
-    - ${ANDROID_HOME}/platform-tools/adb shell input keyevent 82
-    - ./gradlew connectedAndroidTest
-
-android-23:
-  stage: "Compatibility Tests"
-  script:
-    - chmod +x scripts/android-wait-for-emulator
-    - ${ANDROID_HOME}/tools/bin/sdkmanager "system-images;android-23;google_apis;x86"
-    - echo no | ${ANDROID_HOME}/tools/android create avd -n test -t android-23 --abi google_apis/x86
-    - ${ANDROID_HOME}/tools/emulator64-x86 -avd test -no-window -no-audio &
-    - scripts/android-wait-for-emulator
-    - ${ANDROID_HOME}/platform-tools/adb shell input keyevent 82
-    - ./gradlew connectedAndroidTest
-
-android-21:
-  stage: "Compatibility Tests"
-  script:
-    - chmod +x scripts/android-wait-for-emulator
-    - ${ANDROID_HOME}/tools/bin/sdkmanager "system-images;android-21;google_apis;x86"
-    - echo no | ${ANDROID_HOME}/tools/android create avd -n test -t android-21 --abi google_apis/x86
-    - ${ANDROID_HOME}/tools/emulator64-x86 -avd test -no-window -no-audio &
-    - scripts/android-wait-for-emulator
-    - ${ANDROID_HOME}/platform-tools/adb shell input keyevent 82
-    - ./gradlew connectedAndroidTest
-
-android-18:
-  stage: "Compatibility Tests"
-  script:
-    - chmod +x scripts/android-wait-for-emulator
-    - ${ANDROID_HOME}/tools/bin/sdkmanager "system-images;android-18;google_apis;x86"
-    - echo no | ${ANDROID_HOME}/tools/android create avd -n test -t android-18 --abi google_apis/x86
+    - echo n | ${ANDROID_HOME}/tools/android create avd -n test -t android-25
     - ${ANDROID_HOME}/tools/emulator64-x86 -avd test -no-window -no-audio &
     - scripts/android-wait-for-emulator
     - ${ANDROID_HOME}/platform-tools/adb shell input keyevent 82
