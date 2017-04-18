@@ -28,7 +28,7 @@ android-25:
   stage: "Compatibility Tests"
   script:
     - chmod +x scripts/android-wait-for-emulator
-    - ${ANDROID_HOME}/tools/bin/sdkmanager "system-images;android-25;google_apis;x86"
+    - echo y | ${ANDROID_HOME}/tools/bin/sdkmanager "system-images;android-25;google_apis;x86"
     - echo no | ${ANDROID_HOME}/tools/android create avd -n test -t android-25 --abi google_apis/x86
     - ${ANDROID_HOME}/tools/emulator64-x86 -avd test -no-window -no-audio &
     - scripts/android-wait-for-emulator
