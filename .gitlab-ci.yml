@@ -8,17 +8,27 @@ before_script:
   - chmod +x ./gradlew
 
 
-#     - echo no | ${ANDROID_HOME}/tools/bin/avdmanager create avd -n test -t android-18 --abi google_apis/x86
-
 #"Compatibility Tests"
 android-25:
   stage: Build
   script:
     - chmod +x scripts/android-wait-for-emulator
-    - echo y | ${ANDROID_HOME}/tools/bin/sdkmanager --update
-    - echo y | ${ANDROID_HOME}/tools/bin/sdkmanager "emulator" "system-images;android-25;google_apis;armeabi-v7a"
-    - echo n | ${ANDROID_HOME}/tools/bin/avdmanager create avd --name test --abi google_apis/armeabi-v7a --package "system-images;android-25;google_apis;armeabi-v7a"
+    - echo y | sdkmanager --update
+    - echo y | sdkmanager "emulator" "system-images;android-25;google_apis;armeabi-v7a"
+    - echo n | avdmanager create avd --name test --abi google_apis/armeabi-v7a --package "system-images;android-25;google_apis;armeabi-v7a"
     - ${ANDROID_HOME}/emulator/emulator -avd test -no-window -no-audio &
     - scripts/android-wait-for-emulator
-    - ${ANDROID_HOME}/platform-tools/adb shell input keyevent 82
+    - adb shell input keyevent 82
+    - ./gradlew connectedAndroidTest
+
+android-25x86:
+  stage: Build
+  script:
+    - chmod +x scripts/android-wait-for-emulator
+    - echo y | sdkmanager --update
+    - echo y | sdkmanager "emulator" "system-images;android-25;google_apis;x86"
+    - echo n | avdmanager create avd --name test --abi google_apis/x86 --package "system-images;android-25;google_apis;x86"
+    - ${ANDROID_HOME}/emulator/emulator64-x86 -avd test -no-window -no-audio &
+    - scripts/android-wait-for-emulator
+    - adb shell input keyevent 82
     - ./gradlew connectedAndroidTest
