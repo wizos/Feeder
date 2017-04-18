@@ -1,16 +1,69 @@
 image: spacecowboy/android-docker-builder:25
 
+stages:
+  - java
+  - emulator
+
 before_script:
   - chmod +x ./gradlew
 
-build:
+assemble:
+  stage: java
   script:
     - ./gradlew assembleDebug
   artifacts:
     paths:
     - app/build/outputs/
 
-test:
+check:
+  stage: java
   script:
     - ./gradlew check
   artifacts:
+    paths:
+    - app/build/reports/
+    - app/build/test-results/
+
+functionalTests25:
+  stage: emulator
+  script:
+    - chmod +x scripts/android-wait-for-emulator
+    - ${ANDROID_HOME}/tools/bin/sdkmanager "system-images;android-25;google_apis;x86"
+    - echo no | ${ANDROID_HOME}/tools/android create avd -n test -t android-25 --abi google_apis/x86
+    - ${ANDROID_HOME}/tools/emulator64-x86 -avd test -no-window -no-audio &
+    - scripts/android-wait-for-emulator
+    - ${ANDROID_HOME}/platform-tools/adb shell input keyevent 82
+    - ./gradlew connectedAndroidTest
+
+functionalTests23:
+  stage: emulator
+  script:
+    - chmod +x scripts/android-wait-for-emulator
+    - ${ANDROID_HOME}/tools/bin/sdkmanager "system-images;android-23;google_apis;x86"
+    - echo no | ${ANDROID_HOME}/tools/android create avd -n test -t android-23 --abi google_apis/x86
+    - ${ANDROID_HOME}/tools/emulator64-x86 -avd test -no-window -no-audio &
+    - scripts/android-wait-for-emulator
+    - ${ANDROID_HOME}/platform-tools/adb shell input keyevent 82
+    - ./gradlew connectedAndroidTest
+
+functionalTests21:
+  stage: emulator
+  script:
+    - chmod +x scripts/android-wait-for-emulator
+    - ${ANDROID_HOME}/tools/bin/sdkmanager "system-images;android-21;google_apis;x86"
+    - echo no | ${ANDROID_HOME}/tools/android create avd -n test -t android-21 --abi google_apis/x86
+    - ${ANDROID_HOME}/tools/emulator64-x86 -avd test -no-window -no-audio &
+    - scripts/android-wait-for-emulator
+    - ${ANDROID_HOME}/platform-tools/adb shell input keyevent 82
+    - ./gradlew connectedAndroidTest
+
+functionalTests18:
+  stage: emulator
+  script:
+    - chmod +x scripts/android-wait-for-emulator
+    - ${ANDROID_HOME}/tools/bin/sdkmanager "system-images;android-18;google_apis;x86"
+    - echo no | ${ANDROID_HOME}/tools/android create avd -n test -t android-18 --abi google_apis/x86
+    - ${ANDROID_HOME}/tools/emulator64-x86 -avd test -no-window -no-audio &
+    - scripts/android-wait-for-emulator
+    - ${ANDROID_HOME}/platform-tools/adb shell input keyevent 82
+    - ./gradlew connectedAndroidTest
