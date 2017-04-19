@@ -16,3 +16,4 @@ mytest:
     - "ls -lha"
     - "touch afile.txt"
     - "ls -lha /"
+    - "ls -lha /home"
