@@ -21,6 +21,19 @@ android-25:
     - adb shell input keyevent 82
     - ./gradlew connectedAndroidTest
 
+android-2564:
+  stage: Build
+  script:
+    - chmod +x scripts/android-wait-for-emulator
+    - echo y | sdkmanager --update
+    - echo y | sdkmanager "emulator" "system-images;android-25;google_apis;armeabi-v7a"
+    - echo n | avdmanager create avd --name test --abi google_apis/armeabi-v7a --package "system-images;android-25;google_apis;armeabi-v7a"
+    - ${ANDROID_HOME}/emulator/emulator64-arm -avd test -no-window -no-audio &
+    - scripts/android-wait-for-emulator
+    - adb shell input keyevent 82
+    - ./gradlew connectedAndroidTest
+
+
 android-25x86:
   stage: Build
   script:
