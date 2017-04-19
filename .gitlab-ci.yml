@@ -12,7 +12,7 @@ mytest:
   tags:
     - private
   script:
-    - echo "Working dir: $(pwd)"
-    - ls -lha
-    - touch afile.txt
-    - ls -lha /
+    - "echo Working dir: $(pwd)"
+    - "ls -lha"
+    - "touch afile.txt"
+    - "ls -lha /"
