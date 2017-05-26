@@ -1034,16 +1034,6 @@ public class FeedFragment extends Fragment
                     i.putExtra(BaseActivity.SHOULD_FINISH_BACK, true);
                     ReaderActivity.setRssExtras(i, rssItem);
 
-//                    ActivityOptionsCompat options = ActivityOptionsCompat
-//                            .makeScaleUpAnimation(view, 0, 0, view.getWidth(),
-//                                    view.getHeight());
-
-//                    ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(getActivity(),
-//                            new Pair<View, String>(titleTextView,
-//                                    "title"));
-                    //new Pair<View, String>(imageView, "image"));
-
-                    //ActivityCompat.startActivity(getActivity(), i, null);
                     startActivity(i);
                 } else {
                     // Mark as read
