@@ -75,7 +75,7 @@ public class ReaderActivity extends BaseActivity {
      */
     private Fragment getFragment() {
         Intent i = getIntent();
-        Fragment fragment = new ReaderFragment();
+        Fragment fragment = new ReaderWebViewFragment();
         fragment.setArguments(i.getExtras());
         return fragment;
     }
