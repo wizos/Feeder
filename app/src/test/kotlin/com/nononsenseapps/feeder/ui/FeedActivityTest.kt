@@ -1,8 +1,8 @@
 package com.nononsenseapps.feeder.ui
 
 import com.nononsenseapps.feeder.BuildConfig
-import com.nononsenseapps.feeder.R
 import com.nononsenseapps.feeder.util.PrefUtils
+import kotlinx.android.synthetic.main.include_activity_feed_main.*
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric.setupActivity
@@ -19,9 +19,9 @@ class FeedActivityTest {
     fun clickingNightModeShouldTogglePrefs() {
         val activity = setupActivity(FeedActivity::class.java)
         assertFalse(PrefUtils.isNightMode(activity), "Should start with false")
-        activity.findViewById(R.id.nightcheck).performClick()
+        activity.nightcheck.performClick()
         assertTrue(PrefUtils.isNightMode(activity), "Should toggle value")
-        activity.findViewById(R.id.nightcheck).performClick()
+        activity.nightcheck.performClick()
         assertFalse(PrefUtils.isNightMode(activity), "Should toggle value again")
     }
 }
