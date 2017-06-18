@@ -663,12 +663,22 @@ public class FeedFragment extends Fragment
 
                 @Override
                 public void onInserted(int position, int count) {
-                    FeedAdapter.this.notifyItemRangeInserted(position, count);
+                    // Since there is a footer some special logic is done when the list is initially populated
+                    if (count == mItems.size()) {
+                        FeedAdapter.this.notifyDataSetChanged();
+                    } else {
+                        FeedAdapter.this.notifyItemRangeInserted(position, count);
+                    }
                 }
 
                 @Override
                 public void onRemoved(int position, int count) {
-                    FeedAdapter.this.notifyItemRangeRemoved(position, count);
+                    // Since there is a footer some special logic is done when the list becomes empty
+                    if (mItems.size() == 0) {
+                        FeedAdapter.this.notifyDataSetChanged();
+                    } else {
+                        FeedAdapter.this.notifyItemRangeRemoved(position, count);
+                    }
                 }
 
                 @Override
@@ -757,7 +767,11 @@ public class FeedFragment extends Fragment
         @Override
         public int getItemCount() {
             // header + rest
-            return 1 + mItems.size();
+            if (mItems.size() > 0) {
+                return 1 + mItems.size();
+            } else {
+                return 0;
+            }
         }
 
 
