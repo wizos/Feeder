@@ -1,3 +1,5 @@
+image: openjdk:8-jdk
+
 variables:
   ANDROID_HOME: /android
   ANDROID_SDK_TOOLS: "25.2.5"
@@ -43,8 +45,21 @@ before_script:
 
 build:jdk-1.8:
   <<: *build_def
-  image: openjdk:8-jdk
 
 test:jdk-1.8:
   <<: *test_def
-  image: openjdk:8-jdk
+
+functionalTests:
+  stage: test
+  script:
+    - wget --quiet --output-document=android-wait-for-emulator https://raw.githubusercontent.com/travis-ci/travis-cookbooks/0f497eb71291b52a703143c5cd63a217c8766dc9/community-cookbooks/android-sdk/files/default/android-wait-for-emulator
+    - chmod +x android-wait-for-emulator
+    - echo y | sdkmanager "system-images;android-25;google_apis;x86"
+    - echo no | avdmanager create avd --force --name "android25" --package "system-images;android-25;google_apis;x86"
+    - emulator -avd "android25" -no-window -no-audio &
+    - ./android-wait-for-emulator
+    - adb shell input keyevent 82
+    - ./gradlew cAT
+  artifacts:
+    paths:
+    - app/build/reports/androidTests/
