@@ -1,6 +1,7 @@
 stages:
   - build
   - test
+  - test2
 
 image: openjdk:8-jdk
 
@@ -37,29 +38,41 @@ variables:
   <<: *before_docker
   stage: build
   script:
-    - ./gradlew assemble
+    - ./gradlew assemble assembleAndroidTest
   artifacts:
-    paths:
-    - app/build/outputs/
+    expire_in: 1 week
+    untracked: true
 
 .test: &test_def
   <<: *before_docker
-  stage: build
+  stage: test
   script:
     - ./gradlew check
   artifacts:
+    paths:
+      - app/build/reports
+
+.arm_test: &arm_def
+  <<: *before_docker
+  stage: test
+  script:
+    - ci/emulator-tests ${ANDROID_EMULATOR_SDK} armeabi-v7a
+  artifacts:
+    paths:
+      - app/build/reports
 
 .emulator_test: &emulator_def
   <<: *before_metal
   tags:
     - metal
     - android
-  stage: test
+  stage: test2
   script:
     - ci/emulator-tests ${ANDROID_EMULATOR_SDK}
   artifacts:
     paths:
-      - app/build/reports/androidTests/
+      - app/build/reports
+
 
 build:jdk-1.8:
   <<: *build_def
@@ -79,5 +92,20 @@ test:emulator-25:
 
 test:emulator-26:
   <<: *emulator_def
+  variables:
+    ANDROID_EMULATOR_SDK: "26"
+
+test:arm-18:
+  <<: *arm_def
+  variables:
+    ANDROID_EMULATOR_SDK: "18"
+
+test:arm-25:
+  <<: *arm_def
+  variables:
+    ANDROID_EMULATOR_SDK: "25"
+
+test:arm-26:
+  <<: *arm_def
   variables:
     ANDROID_EMULATOR_SDK: "26"
