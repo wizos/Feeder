@@ -104,8 +104,3 @@ test:arm-25:
   <<: *arm_def
   variables:
     ANDROID_EMULATOR_SDK: "25"
-
-test:arm-26:
-  <<: *arm_def
-  variables:
-    ANDROID_EMULATOR_SDK: "26"
