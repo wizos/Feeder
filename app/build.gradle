@@ -1,6 +1,10 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
+println "setting global timeout for apk installation to 10 minutes"
+com.android.ddmlib.DdmPreferences.setTimeOut(600000)
+
+
 android {
   buildToolsVersion '25.0.2'
 

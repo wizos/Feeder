@@ -9,6 +9,7 @@ variables:
   ANDROID_HOME: /var/lib/gitlab-runner/android
   ANDROID_COMPILE_SDK: "25"
   ANDROID_BUILD_TOOLS: "25.0.2"
+  ADB_INSTALL_TIMEOUT: "8"
 
 .sdk_apt: &before_docker
   before_script:
@@ -48,6 +49,8 @@ variables:
   stage: test
   script:
     - ./gradlew check
+  dependencies:
+    - build:jdk-1.8
   artifacts:
     paths:
       - app/build/reports
@@ -57,6 +60,8 @@ variables:
   stage: test
   script:
     - ci/emulator-tests ${ANDROID_EMULATOR_SDK} armeabi-v7a
+  dependencies:
+    - build:jdk-1.8
   artifacts:
     paths:
       - app/build/reports
@@ -69,6 +74,8 @@ variables:
   stage: test2
   script:
     - ci/emulator-tests ${ANDROID_EMULATOR_SDK}
+  dependencies:
+    - build:jdk-1.8
   artifacts:
     paths:
       - app/build/reports
@@ -80,17 +87,17 @@ build:jdk-1.8:
 unit-tests:jdk-1.8:
   <<: *test_def
 
-test:emulator-18:
+test:x86-18:
   <<: *emulator_def
   variables:
     ANDROID_EMULATOR_SDK: "18"
 
-test:emulator-25:
+test:x86-25:
   <<: *emulator_def
   variables:
     ANDROID_EMULATOR_SDK: "25"
 
-test:emulator-26:
+test:x86-26:
   <<: *emulator_def
   variables:
     ANDROID_EMULATOR_SDK: "26"
@@ -99,6 +106,36 @@ test:arm-18:
   <<: *arm_def
   variables:
     ANDROID_EMULATOR_SDK: "18"
+
+test:arm-19:
+  <<: *arm_def
+  variables:
+    ANDROID_EMULATOR_SDK: "19"
+
+test:arm-20:
+  <<: *arm_def
+  variables:
+    ANDROID_EMULATOR_SDK: "20"
+
+test:arm-21:
+  <<: *arm_def
+  variables:
+    ANDROID_EMULATOR_SDK: "21"
+
+test:arm-22:
+  <<: *arm_def
+  variables:
+    ANDROID_EMULATOR_SDK: "22"
+
+test:arm-23:
+  <<: *arm_def
+  variables:
+    ANDROID_EMULATOR_SDK: "23"
+
+test:arm-24:
+  <<: *arm_def
+  variables:
+    ANDROID_EMULATOR_SDK: "24"
 
 test:arm-25:
   <<: *arm_def
