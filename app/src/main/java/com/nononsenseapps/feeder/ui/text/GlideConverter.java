@@ -178,7 +178,7 @@ public class GlideConverter extends HtmlToSpannedConverter {
 
             d = new BitmapDrawable(context.getResources(), b);
             d.setBounds(0, 0, w, h);
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (Exception e) {
             Log.e("ImageTextLoader", "" + e.getMessage());
         }
         return d;
