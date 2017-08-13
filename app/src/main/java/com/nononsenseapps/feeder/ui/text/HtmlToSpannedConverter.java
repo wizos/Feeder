@@ -42,9 +42,7 @@ import android.text.style.TextAppearanceSpan;
 import android.text.style.TypefaceSpan;
 import android.text.style.URLSpan;
 import android.text.style.UnderlineSpan;
-
 import com.nononsenseapps.feeder.R;
-
 import org.ccil.cowan.tagsoup.Parser;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
@@ -55,6 +53,8 @@ import org.xml.sax.XMLReader;
 
 import java.io.IOException;
 import java.io.StringReader;
+
+import static com.nononsenseapps.feeder.util.HelpersKt.getAbsoluteUrl;
 
 /**
  * Convert an HTML document into a spannable string.
@@ -241,7 +241,8 @@ public class HtmlToSpannedConverter implements ContentHandler {
 
     protected void startA(SpannableStringBuilder text,
                           Attributes attributes) {
-        String href = attributes.getValue("", "href");
+        // TODO relative urls
+        String href = getAbsoluteUrl(attributes.getValue("", "href"));
 
         int len = text.length();
         text.setSpan(new Href(href), len, len, Spannable.SPAN_MARK_MARK);
@@ -250,7 +251,8 @@ public class HtmlToSpannedConverter implements ContentHandler {
     protected void startImg(SpannableStringBuilder text,
                             Attributes attributes) {
         // Override me
-        String src = attributes.getValue("", "src");
+        // TODO relative urls
+        String src = getAbsoluteUrl(attributes.getValue("", "src"));
         Drawable d = mContext.getResources().getDrawable(R.drawable.unknown_image);
         d.setBounds(0, 0, d.getIntrinsicWidth(), d.getIntrinsicHeight());
 
