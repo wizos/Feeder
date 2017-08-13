@@ -22,6 +22,8 @@ import org.xml.sax.Attributes;
 
 import java.util.concurrent.ExecutionException;
 
+import static com.nononsenseapps.feeder.util.HelpersKt.getAbsoluteUrl;
+
 public class GlideConverter extends HtmlToSpannedConverter {
 
     private final Context context;
@@ -112,7 +114,7 @@ public class GlideConverter extends HtmlToSpannedConverter {
         Drawable d = null;
         try {
             // Source
-            final String source = attributes.getValue("", "src");
+            final String source = getAbsoluteUrl(attributes.getValue("", "src"));
             final String sWidth = attributes.getValue("", "width");
             final String sHeight = attributes.getValue("", "height");
             // Image size
@@ -208,7 +210,7 @@ public class GlideConverter extends HtmlToSpannedConverter {
 
         int w1, h1;
         try {
-            final Bitmap b = GlideUtils.glideAsBitmap(context, video.imageurl, allowDownload)
+            final Bitmap b = GlideUtils.glideAsBitmap(context, getAbsoluteUrl(video.imageurl), allowDownload)
                     .load(video.imageurl).fitCenter().into(maxSize.x, maxSize.y).get();
             //final Point newSize = scaleImage(b.getWidth(), b.getHeight());
             w1 = b.getWidth();

@@ -1,7 +1,5 @@
 package com.nononsenseapps.feeder.ui.text;
 
-import android.util.Log;
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -29,7 +27,6 @@ public class VideoTagHunter {
             video.imageurl = "http://img.youtube.com/vi/" + m.group(1) + "/hqdefault.jpg";
             video.link = "https://www.youtube.com/watch?v=" + m.group(1);
         }
-        Log.d("JONASYOUTUBE", "image: " + video.imageurl);
 
         return video;
     }

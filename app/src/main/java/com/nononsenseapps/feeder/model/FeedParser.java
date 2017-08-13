@@ -38,6 +38,7 @@ import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import static com.nononsenseapps.feeder.util.HelpersKt.getAbsoluteUrl;
 import static java.lang.Math.min;
 
 public class FeedParser {
@@ -237,14 +238,14 @@ public class FeedParser {
         if (media != null) {
             Thumbnail[] thumbnails = media.getMetadata().getThumbnail();
             if (thumbnails != null && thumbnails.length > 0) {
-                return thumbnails[0].getUrl().toString();
+                return getAbsoluteUrl(thumbnails[0].getUrl().toString());
             }
             // Fallback to images
             MediaContent[] contents = media.getMediaContents();
             if (contents != null && contents.length > 0) {
                 for (MediaContent content: contents) {
                     if ("image".equalsIgnoreCase(content.getMedium())) {
-                        return content.getReference().toString();
+                        return getAbsoluteUrl(content.getReference().toString());
                     }
                 }
             }
