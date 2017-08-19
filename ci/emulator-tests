@@ -92,7 +92,29 @@ ${GRADLE} assembleDebug assembleAndroidTest
 wait_for_emulator
 
 # Unlock screen
+echo "Unlocking screen"
 adb shell input keyevent 82
+
+# Press home
+echo "Pressing home"
+adb shell input keyevent 3
+echo "Waiting a little"
+sleep 10
+
+# Prepare emulator so espresso tests can run successfully
+echo "Installing emulator hacks"
+adb install -r ci/android_emulator_hacks-debug.apk
+
+EMULATOR_SDK_INT=$(adb shell getprop ro.build.version.sdk | tr -d '[:space:]')
+echo "Emulator SDK: '${EMULATOR_SDK_INT}'"
+
+if [ "${EMULATOR_SDK_INT}" -ge 16 ]; then
+    echo "Grant android.permission.SET_ANIMATION_SCALE"
+    adb shell pm grant no.finn.android_emulator_hacks android.permission.SET_ANIMATION_SCALE
+fi
+
+echo "Running emulator hacks"
+adb shell am start -n no.finn.android_emulator_hacks/no.finn.android_emulator_hacks.HackActivity
 
 # Test
 ${GRADLE} connectedAndroidTest

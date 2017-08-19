@@ -54,7 +54,7 @@ variables:
   tags:
     - metal
     - android
-  stage: test
+  stage: build
   script:
     - ci/emulator-tests ${ANDROID_EMULATOR_SDK}
   artifacts:
