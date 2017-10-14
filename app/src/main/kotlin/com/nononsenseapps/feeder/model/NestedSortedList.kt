@@ -128,6 +128,7 @@ class NestedSortedList<T>(klass: Class<T>,
             children[parent]?.add(item)
 
             if (notify) {
+                // Notify that parent tag has changed
                 callback.onItemChanged(super.indexOf(parent))
             }
         } else {

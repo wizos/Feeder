@@ -38,6 +38,9 @@ import static java.lang.String.format;
  * documentation for a class overview.
  */
 public class FeedDeltaCursorLoader extends DeltaCursorLoader<FeedSQL> {
+    public static final int NEW_ITEM = 1;
+    public static final int EXISTING_ITEM = 0;
+    public static final int REMOVED_ITEM = -1;
     private static final String TAG = "FeedDeltaCursorLoader";
     ArrayMap<Long, FeedSQL> mItems = null;
 
@@ -107,27 +110,28 @@ public class FeedDeltaCursorLoader extends DeltaCursorLoader<FeedSQL> {
 
                 if (oldItems != null && oldItems.containsKey(item.getId())) {
                     // 0, already in set
-                    result.put(item, 0);
+                    result.put(item, EXISTING_ITEM);
                     oldItems.remove(item.getId());
                 } else {
                     // 1, new item
-                    result.put(item, 1);
+                    result.put(item, NEW_ITEM);
                 }
             }
             // Any items which are left in the old set are now deleted
             if (oldItems != null) {
                 for (FeedSQL item : oldItems.values()) {
                     // -1, removed item
-                    result.put(item, -1);
+                    result.put(item, REMOVED_ITEM);
                 }
             }
         } catch (IllegalStateException e) {
             // Cursor must have been closed due to heavy sync activity
+            // Return old result set and count on next sync to update instead
             Log.d(TAG, format("Got an error during UI update which I ignored: %s", e.getMessage()));
             result.clear();
             if (oldItems != null) {
                 for (FeedSQL oldItem : oldItems.values()) {
-                    result.put(oldItem, 0);
+                    result.put(oldItem, EXISTING_ITEM);
                 }
             }
         }

@@ -64,6 +64,8 @@ import java.util.Set;
 
 import static com.nononsenseapps.feeder.db.FeedSQLKt.FIELDS_VIEWCOUNT;
 import static com.nononsenseapps.feeder.db.UriKt.URI_FEEDSWITHCOUNTS;
+import static com.nononsenseapps.feeder.util.FeedDeltaCursorLoader.EXISTING_ITEM;
+import static com.nononsenseapps.feeder.util.FeedDeltaCursorLoader.NEW_ITEM;
 
 /**
  * Base activity which handles navigation drawer and other bloat common
@@ -604,6 +606,11 @@ public class BaseActivity extends AppCompatActivity
             isTop = false;
         }
 
+        /**
+         * Should return whether two items are the same or not (not if their contents match)
+         * @param o
+         * @return
+         */
         @Override
         public boolean equals(Object o) {
             if (o == null) {
@@ -615,7 +622,7 @@ public class BaseActivity extends AppCompatActivity
                     return tag.equals(f.tag);
                 } else {
                     // Compare items
-                    return !isTag && !f.isTag && item.equals(f.item);
+                    return !isTag && !f.isTag && item.getId() == f.item.getId();
                 }
             } else {
                 return false;
@@ -639,7 +646,7 @@ public class BaseActivity extends AppCompatActivity
             if (isTag) {
                 return "Tag: " + tag;
             } else {
-                return "Item: " + item.getCustomTitle() + " (" + tag + ")";
+                return "Item: " + item.getDisplayTitle() + " (" + tag + ")";
             }
         }
     }
@@ -842,24 +849,17 @@ public class BaseActivity extends AppCompatActivity
             mItems.beginBatchedUpdates();
             for (FeedSQL item : map.keySet()) {
                 FeedWrapper wrap = new FeedWrapper(item);
-                if (map.get(item) >= 0) {
-                    if (map.get(item) == 0) {
-                        // First remove it, tree structure needs to be updated
-                        FeedWrapper oldWrap = oldItemMap.remove(item.getId());
-                        mItems.remove(oldWrap);
-                    }
+                if (EXISTING_ITEM == map.get(item)) {
+                    // "Mark as handled" - so we don't remove it at the end of the function
+                    oldItemMap.remove(item.getId());
+                }
+                if (EXISTING_ITEM == map.get(item) || NEW_ITEM == map.get(item)) {
                     mItems.add(wrap);
                     // Add to new map as well
                     mItemMap.put(item.getId(), wrap);
-                } else {
-                    mItems.remove(wrap);
-                    // And remove from old
-                    oldItemMap.remove(item.getId());
                 }
             }
-            // If any items remain in old set, they are not present in current result set,
-            // remove them. This is pretty much what is done in the delta loader, but if
-            // the loader is restarted, then it has no old data to go on.
+            // If any items remain in old set, they are not present in current result set, remove them.
             for (FeedWrapper item : oldItemMap.values()) {
                 mItems.remove(item);
             }
