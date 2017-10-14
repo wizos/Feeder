@@ -5,6 +5,7 @@ import org.junit.Test
 import org.mockito.Mockito
 import org.mockito.Mockito.`when`
 import org.mockito.Mockito.anyString
+import org.mockito.Mockito.verify
 import kotlin.test.assertEquals
 
 
@@ -176,14 +177,37 @@ class NestedSortedListTest {
         assertEquals(0, list.indexOf("A"))
         assertEquals(1, list.indexOf("Aa"))
     }
+
+    @Test
+    fun ensureTagsGetUpdateCall() {
+        `when`(callback.getItemLevel("A")).thenReturn(0)
+        `when`(callback.getItemLevel("Aa")).thenReturn(1)
+        `when`(callback.getItemLevel("AB")).thenReturn(1)
+        `when`(callback.getItemLevel("ABa")).thenReturn(2)
+        `when`(callback.getItemLevel("ABb")).thenReturn(2)
+        `when`(callback.getParentOf("Aa")).thenReturn("A")
+        `when`(callback.getParentOf("AB")).thenReturn("A")
+        `when`(callback.getParentOf("ABa")).thenReturn("AB")
+        `when`(callback.getParentOf("ABb")).thenReturn("AB")
+
+        list.add("Aa")
+        list.add("ABa")
+
+        assertEquals(3, list.size())
+        assertEquals(0, list.indexOf("A"))
+        assertEquals(1, list.indexOf("Aa"))
+        assertEquals(2, list.indexOf("AB"))
+
+        list.add("ABb")
+
+        verify(callback).onChanged(2, 1)
+    }
 }
 
 open class TestCallback: NestedCallback<String>() {
-    override fun compare(a: String?, b: String?): Int {
-        return when {
-            a != null && b != null -> a.toLowerCase().compareTo(b.toLowerCase())
-            else -> 0
-        }
+    override fun compare(a: String?, b: String?): Int = when {
+        a != null && b != null -> a.toLowerCase().compareTo(b.toLowerCase())
+        else -> 0
     }
 
     override fun getItemLevel(item: String): Int {
