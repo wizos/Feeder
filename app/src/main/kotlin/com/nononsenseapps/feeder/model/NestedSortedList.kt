@@ -4,6 +4,7 @@ import android.support.v4.util.ArrayMap
 import android.support.v4.util.ArraySet
 import android.support.v7.util.SortedList
 import com.nononsenseapps.feeder.util.getWithDefault
+import com.nononsenseapps.feeder.util.withBatchedUpdates
 
 
 class NestedSortedList<T>(klass: Class<T>,
@@ -14,20 +15,25 @@ class NestedSortedList<T>(klass: Class<T>,
     private val expandedParents: MutableSet<T> = ArraySet()
 
     override fun add(item: T): Int {
-        addSubItem(item)
-        // Only add to super if item is at top, or in an expanded subtree
-        return if (isShowing(item)) {
-            super.add(item)
-        } else {
-            INVALID_POSITION
+        var result: Int = INVALID_POSITION
+        withBatchedUpdates {
+            addSubItem(item)
+            // Only add to super if item is at top, or in an expanded subtree
+            result = if (isShowing(item)) {
+                super.add(item)
+            } else {
+                INVALID_POSITION
+            }
         }
+        return result
     }
 
     override fun remove(item: T): Boolean {
-        super.beginBatchedUpdates()
-        // Delete parent(s) of item if no more siblings remain
-        val res = nestedRemove(item)
-        super.endBatchedUpdates()
+        var res = false
+        withBatchedUpdates {
+            // Delete parent(s) of item if no more siblings remain
+            res = nestedRemove(item)
+        }
 
         return res
     }
@@ -74,20 +80,20 @@ class NestedSortedList<T>(klass: Class<T>,
             return
         }
 
-        super.beginBatchedUpdates()
-        for (child in children.getWithDefault(parent, mutableSetOf())) {
-            super.add(child)
+        withBatchedUpdates {
+            for (child in children.getWithDefault(parent, mutableSetOf())) {
+                super.add(child)
+            }
         }
-        super.endBatchedUpdates()
 
         expandedParents.add(parent)
     }
 
     fun contract(parent: T) {
         if (expandedParents.contains(parent)) {
-            super.beginBatchedUpdates()
-            nestedContract(parent)
-            super.endBatchedUpdates()
+            withBatchedUpdates {
+                nestedContract(parent)
+            }
         }
     }
 
