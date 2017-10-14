@@ -5,6 +5,7 @@ import org.junit.Test
 import org.mockito.Mockito
 import org.mockito.Mockito.`when`
 import org.mockito.Mockito.anyString
+import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import kotlin.test.assertEquals
 
@@ -200,7 +201,30 @@ class NestedSortedListTest {
 
         list.add("ABb")
 
-        verify(callback).onChanged(2, 1)
+        verify(callback).onItemChanged(2)
+    }
+
+    @Test
+    fun repeatedAddDoesNotDuplicate() {
+        `when`(callback.getItemLevel("A")).thenReturn(0)
+        `when`(callback.getItemLevel("Aa")).thenReturn(1)
+        `when`(callback.getParentOf("Aa")).thenReturn("A")
+
+        list.add("Aa")
+        list.add("Aa")
+
+        assertEquals(2, list.size())
+        assertEquals(0, list.indexOf("A"))
+        assertEquals(1, list.indexOf("Aa"))
+
+        list.add("Aa")
+
+        assertEquals(2, list.size())
+        assertEquals(0, list.indexOf("A"))
+        assertEquals(1, list.indexOf("Aa"))
+
+        verify(callback, times(2)).onItemChanged(0)
+        verify(callback, times(0)).onItemChanged(1)
     }
 }
 
