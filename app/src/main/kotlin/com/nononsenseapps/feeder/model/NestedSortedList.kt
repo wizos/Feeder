@@ -6,7 +6,9 @@ import android.support.v7.util.SortedList
 import com.nononsenseapps.feeder.util.getWithDefault
 
 
-class NestedSortedList<T>(klass: Class<T>, val callback: NestedCallback<T>, initialCapacity: Int = 10) : SortedList<T>(klass, callback, initialCapacity) {
+class NestedSortedList<T>(klass: Class<T>,
+                          val callback: NestedCallback<T>,
+                          initialCapacity: Int = 10) : SortedList<T>(klass, callback, initialCapacity) {
 
     private val children: ArrayMap<T, MutableSet<T>> = ArrayMap()
     private val expandedParents: MutableSet<T> = ArraySet()
@@ -14,10 +16,10 @@ class NestedSortedList<T>(klass: Class<T>, val callback: NestedCallback<T>, init
     override fun add(item: T): Int {
         addSubItem(item)
         // Only add to super if item is at top, or in an expanded subtree
-        if (isShowing(item)) {
-            return super.add(item)
+        return if (isShowing(item)) {
+            super.add(item)
         } else {
-            return INVALID_POSITION
+            INVALID_POSITION
         }
     }
 
@@ -65,9 +67,7 @@ class NestedSortedList<T>(klass: Class<T>, val callback: NestedCallback<T>, init
         return expandedParents.contains(parent)
     }
 
-    fun isExpanded(parent: T): Boolean {
-        return expandedParents.contains(parent)
-    }
+    fun isExpanded(parent: T): Boolean = expandedParents.contains(parent)
 
     fun expand(parent: T) {
         if (expandedParents.contains(parent)) {
@@ -91,9 +91,8 @@ class NestedSortedList<T>(klass: Class<T>, val callback: NestedCallback<T>, init
         }
     }
 
-    fun getParentUnreadCount(parent: T): Int {
-        return callback.getParentUnreadCount(parent, children.getWithDefault(parent, mutableSetOf()))
-    }
+    fun getParentUnreadCount(parent: T): Int =
+            callback.getParentUnreadCount(parent, children.getWithDefault(parent, mutableSetOf()))
 
     /**
      * Same as contract except that it is does not handle batching of updates
@@ -112,13 +111,12 @@ class NestedSortedList<T>(klass: Class<T>, val callback: NestedCallback<T>, init
         val parent = callback.getParentOf(item)
 
         if (parent != null) {
-            val notify: Boolean
-            if (!children.containsKey(parent)) {
+            val notify: Boolean = if (!children.containsKey(parent)) {
                 children.put(parent, ArraySet())
                 add(parent)
-                notify = false
+                false
             } else {
-                notify = true
+                true
             }
 
             children[parent]?.add(item)
