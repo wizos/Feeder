@@ -22,10 +22,13 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.support.v4.util.ArrayMap;
+import android.util.Log;
 import com.nononsenseapps.feeder.db.FeedSQL;
 import com.nononsenseapps.feeder.db.FeedSQLKt;
 
 import java.util.Map;
+
+import static java.lang.String.format;
 
 /**
  * Static library support version of the framework's {@link android.content.CursorLoader}.
@@ -35,6 +38,7 @@ import java.util.Map;
  * documentation for a class overview.
  */
 public class FeedDeltaCursorLoader extends DeltaCursorLoader<FeedSQL> {
+    private static final String TAG = "FeedDeltaCursorLoader";
     ArrayMap<Long, FeedSQL> mItems = null;
 
     /**
@@ -94,29 +98,39 @@ public class FeedDeltaCursorLoader extends DeltaCursorLoader<FeedSQL> {
         ArrayMap<Long, FeedSQL> oldItems = mItems;
         mItems = new ArrayMap<>();
 
-        // Find out which items are currently present
-        while (mCursor.moveToNext()) {
-            FeedSQL item = FeedSQLKt.asFeed(mCursor);
+        try {
+            // Find out which items are currently present
+            while (mCursor.moveToNext()) {
+                FeedSQL item = FeedSQLKt.asFeed(mCursor);
 
-            mItems.put(item.getId(), item);
+                mItems.put(item.getId(), item);
 
-            if (oldItems != null && oldItems.containsKey(item.getId())) {
-                // 0, already in set
-                result.put(item, 0);
-                oldItems.remove(item.getId());
-            } else {
-                // 1, new item
-                result.put(item, 1);
+                if (oldItems != null && oldItems.containsKey(item.getId())) {
+                    // 0, already in set
+                    result.put(item, 0);
+                    oldItems.remove(item.getId());
+                } else {
+                    // 1, new item
+                    result.put(item, 1);
+                }
+            }
+            // Any items which are left in the old set are now deleted
+            if (oldItems != null) {
+                for (FeedSQL item : oldItems.values()) {
+                    // -1, removed item
+                    result.put(item, -1);
+                }
+            }
+        } catch (IllegalStateException e) {
+            // Cursor must have been closed due to heavy sync activity
+            Log.d(TAG, format("Got an error during UI update which I ignored: %s", e.getMessage()));
+            result.clear();
+            if (oldItems != null) {
+                for (FeedSQL oldItem : oldItems.values()) {
+                    result.put(oldItem, 0);
+                }
             }
         }
-        // Any items which are left in the old set are now deleted
-        if (oldItems != null) {
-            for (FeedSQL item : oldItems.values()) {
-                // -1, removed item
-                result.put(item, -1);
-            }
-        }
-
         return result;
     }
 }
