@@ -128,7 +128,7 @@ class NestedSortedList<T>(klass: Class<T>,
             children[parent]?.add(item)
 
             if (notify) {
-                callback.onChanged(super.indexOf(parent), 1)
+                callback.onItemChanged(super.indexOf(parent))
             }
         } else {
             // Root item should be expanded by default
@@ -153,7 +153,7 @@ class NestedSortedList<T>(klass: Class<T>,
         if (parent != null) {
             val siblings = children.getWithDefault(parent, mutableSetOf())
             siblings.remove(item)
-            callback.onChanged(super.indexOf(parent), 1)
+            callback.onItemChanged(super.indexOf(parent))
         }
         return false
     }
@@ -171,4 +171,5 @@ abstract class NestedCallback<T2> : SortedList.Callback<T2>() {
     abstract fun getItemLevel(item: T2): Int
     abstract fun getParentOf(item: T2): T2?
     abstract fun getParentUnreadCount(parent: T2, ts: Set<T2>): Int
+    abstract fun onItemChanged(position: Int)
 }

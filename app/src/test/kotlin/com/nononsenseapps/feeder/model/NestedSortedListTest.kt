@@ -210,6 +210,10 @@ open class TestCallback: NestedCallback<String>() {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
+    override fun onItemChanged(position: Int) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
     override fun areItemsTheSame(a: String?, b: String?): Boolean {
         return a == b
     }

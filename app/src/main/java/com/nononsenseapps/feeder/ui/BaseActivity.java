@@ -780,6 +780,11 @@ public class BaseActivity extends AppCompatActivity
                 }
 
                 @Override
+                public void onItemChanged(int position) {
+                    notifyItemChanged(position);
+                }
+
+                @Override
                 public boolean areContentsTheSame(FeedWrapper oldItem, FeedWrapper newItem) {
                     if (oldItem.isTag && newItem.isTag) {
                         return oldItem.tag.equals(newItem.tag) &&
