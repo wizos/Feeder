@@ -1,7 +1,13 @@
 package com.nononsenseapps.feeder.db
 
 import android.database.Cursor
-import com.nononsenseapps.feeder.util.*
+import com.nononsenseapps.feeder.util.getInt
+import com.nononsenseapps.feeder.util.getLong
+import com.nononsenseapps.feeder.util.getString
+import com.nononsenseapps.feeder.util.setInt
+import com.nononsenseapps.feeder.util.setLong
+import com.nononsenseapps.feeder.util.setString
+import com.nononsenseapps.feeder.util.setStringMaybe
 import org.joda.time.DateTime
 import java.net.URI
 import java.net.URL
@@ -150,6 +156,15 @@ data class FeedItemSQL(val id: Long = -1,
                 setStringMaybe(COL_PUBDATE to pubDateString)
                 setStringMaybe(COL_ENCLOSURELINK to enclosurelink)
             }
+
+    override fun equals(other: Any?): Boolean {
+        if (other != null && other is FeedItemSQL) {
+            return id == other.id
+        }
+        return false
+    }
+
+    override fun hashCode(): Int = id.hashCode()
 }
 
 fun Cursor.asFeedItem(): FeedItemSQL {

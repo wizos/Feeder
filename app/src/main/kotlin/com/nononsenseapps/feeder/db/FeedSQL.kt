@@ -81,6 +81,14 @@ data class FeedSQL(val id: Long = -1, val title: String = "", val customTitle: S
                 setInt(COL_NOTIFY to if (notify) 1 else 0)
             }
 
+    override fun equals(other: Any?): Boolean {
+        if (other != null && other is FeedSQL) {
+            return id == other.id
+        }
+        return false
+    }
+
+    override fun hashCode(): Int = id.hashCode()
 }
 
 fun Cursor.asFeed(): FeedSQL {

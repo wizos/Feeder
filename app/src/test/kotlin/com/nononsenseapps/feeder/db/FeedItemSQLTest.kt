@@ -1,8 +1,9 @@
 package com.nononsenseapps.feeder.db
 
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
 import org.junit.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class FeedItemSQLTest {
     @Test
@@ -36,5 +37,14 @@ class FeedItemSQLTest {
     fun magnetLinkGivesNullFilename() {
         val fi = FeedItemSQL(enclosurelink = "magnet:?xt=urn:btih:E6F5537982306CF703E5016B2BBD36C9B3E3CDD0&dn=Game+of+Thrones+S07E01+PROPER+WEBRip+x264+RARBG&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969%2Fannounce&tr=udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969%2Fannounce&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337%2Fannounce&tr=http%3A%2F%2Ftracker.trackerfix.com%3A80%2Fannounce")
         assertNull(fi.enclosureFilename)
+    }
+
+    @Test
+    fun equalsContract() {
+        val a = FeedItemSQL(id = 99, title = "A")
+        val b = FeedItemSQL(id = 99, title = "B")
+
+        assertTrue(a == b, "Expected equality")
+        assertEquals(a.hashCode(), b.hashCode(), "Expected hashcodes to match")
     }
 }

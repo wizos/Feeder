@@ -622,7 +622,7 @@ public class BaseActivity extends AppCompatActivity
                     return tag.equals(f.tag);
                 } else {
                     // Compare items
-                    return !isTag && !f.isTag && item.getId() == f.item.getId();
+                    return !isTag && !f.isTag && item.equals(f.item);
                 }
             } else {
                 return false;
