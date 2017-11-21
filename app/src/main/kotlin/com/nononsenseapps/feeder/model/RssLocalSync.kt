@@ -29,6 +29,8 @@ import com.nononsenseapps.feeder.util.getIdForFeedItem
 import com.nononsenseapps.feeder.util.intoContentProviderOperation
 import com.nononsenseapps.feeder.util.notifyAllUris
 import com.nononsenseapps.jsonfeed.Feed
+import io.reactivex.Observable
+import io.reactivex.schedulers.Schedulers
 import org.joda.time.DateTime
 import org.joda.time.Duration
 import java.io.File
@@ -58,6 +60,31 @@ object RssLocalSync {
 
             val cacheDir = context.externalCacheDir
 
+            val ops: ArrayList<ContentProviderOperation> =
+                    Observable.fromIterable(feeds.toMutableList()).subscribeOn(Schedulers.io()).map {
+                        // Need the feed later in the computation
+                        syncFeed(it, cacheDir) to it
+                    }.filter {
+                        it.first.isPresent
+                    }.map {
+                        convertResultToOperations(it.first.get(), it.second, context.contentResolver)
+                    }.reduce(ArrayList<ContentProviderOperation>(), {acc, next ->
+                        acc.addAll(next)
+                        acc
+                    }).blockingGet()
+
+            try {
+                storeSyncResults(context, ops)
+                // Notify that we've updated
+                context.contentResolver.notifyAllUris()
+            } catch (e: RemoteException) {
+                log.d("Error during sync: ${e.message}")
+                e.printStackTrace()
+            } catch (e: OperationApplicationException) {
+                log.d("Error during sync: ${e.message}")
+                e.printStackTrace()
+            }
+/*
             for (f in feeds) {
                 syncFeed(f, cacheDir).ifPresent { sf ->
                     val ops = convertResultToOperations(sf, f, context.contentResolver)
@@ -73,7 +100,7 @@ object RssLocalSync {
                         e.printStackTrace()
                     }
                 }
-            }
+            }*/
 
             // Finally, prune excessive items
             try {

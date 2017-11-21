@@ -57,6 +57,7 @@ object FeedParser {
 
     @Throws(FeedParser.FeedParsingError::class)
     fun parseFeed(feedUrl: String, cacheDir: File?): Feed {
+        Log.d("FeedParser", "parseFeed: $feedUrl")
         var url = feedUrl
         try {
             if (!url.startsWith("http://") && !url.startsWith("https://")) {
