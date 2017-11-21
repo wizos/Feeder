@@ -61,15 +61,18 @@ object RssLocalSync {
 
             val cacheDir = context.externalCacheDir
 
-            Observable.fromIterable(feeds.toMutableList()).subscribeOn(Schedulers.io()).map {
-                syncFeed(it, cacheDir) to it
-            }.filter {
-                it.first.isPresent
+            Observable.fromIterable(feeds.toMutableList()).flatMap {
+                Observable.just(it).subscribeOn(Schedulers.io()).map {
+                    Log.d("RxRssLocalSync", "Syncing on Thread: ${Thread.currentThread().name}")
+                    syncFeed(it, cacheDir) to it
+                }.filter {
+                    it.first.isPresent
+                }
             }.map {
                 convertResultToOperations(it.first.get(), it.second, context.contentResolver)
             }.blockingForEach {
                 try {
-                    Log.d("RxRssLocalSync", "Storing ${it.size} results")
+                    Log.d("RxRssLocalSync", "Storing ${it.size} results on Thread ${Thread.currentThread().name}")
                     storeSyncResults(context, it)
                     // Notify that we've updated
                     context.contentResolver.notifyAllUris()
