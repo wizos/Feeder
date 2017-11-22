@@ -248,7 +248,7 @@ public class HtmlToSpannedConverter implements ContentHandler {
         String href = attributes.getValue("", "href");
 
         int len = text.length();
-        text.setSpan(new Href(href), len, len, Spannable.SPAN_MARK_MARK);
+        text.setSpan(new Href(relativeLinkIntoAbsolute(mSiteUrl, href)), len, len, Spannable.SPAN_MARK_MARK);
     }
 
     protected void startImg(SpannableStringBuilder text,
