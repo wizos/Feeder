@@ -247,8 +247,13 @@ public class HtmlToSpannedConverter implements ContentHandler {
                           Attributes attributes) {
         String href = attributes.getValue("", "href");
 
+        if (href != null) {
+            // Yes, this was an observed null pointer exception
+            href = relativeLinkIntoAbsolute(mSiteUrl, href);
+        }
+
         int len = text.length();
-        text.setSpan(new Href(relativeLinkIntoAbsolute(mSiteUrl, href)), len, len, Spannable.SPAN_MARK_MARK);
+        text.setSpan(new Href(href), len, len, Spannable.SPAN_MARK_MARK);
     }
 
     protected void startImg(SpannableStringBuilder text,
