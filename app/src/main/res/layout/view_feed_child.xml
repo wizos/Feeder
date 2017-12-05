@@ -42,17 +42,26 @@
     app:layout_constraintEnd_toEndOf="parent"
     app:layout_constraintTop_toTopOf="parent" />
 
+  <ImageView
+    android:id="@+id/feed_icon"
+    android:layout_width="?android:attr/listPreferredItemHeightSmall"
+    android:layout_height="?android:attr/listPreferredItemHeightSmall"
+    android:paddingRight="8dp"
+    android:visibility="gone"
+    app:layout_constraintTop_toTopOf="parent"
+    app:layout_constraintStart_toStartOf="parent"/>
+
   <TextView
     android:id="@+id/feed_name"
     android:layout_width="0dp"
     android:layout_height="wrap_content"
-    android:layout_marginStart="8dp"
+    android:layout_marginEnd="8dp"
     android:gravity="center_vertical"
     android:minHeight="?android:attr/listPreferredItemHeightSmall"
     android:paddingEnd="2dp"
     android:singleLine="true"
     android:textAppearance="?android:attr/textAppearanceListItemSmall"
     app:layout_constraintEnd_toStartOf="@+id/feed_unreadcount"
-    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintStart_toEndOf="@+id/feed_icon"
     app:layout_constraintTop_toTopOf="parent" />
 </android.support.constraint.ConstraintLayout>

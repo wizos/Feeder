@@ -106,18 +106,14 @@ internal class FeedsAdapter(private val activity: BaseActivity) : RecyclerView.A
         return result
     }
 
-    private fun isExpanded(item: FeedWrapper): Boolean {
-        return expandedTags.contains(item.tag)
-    }
+    private fun isExpanded(item: FeedWrapper): Boolean = expandedTags.contains(item.tag)
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder? {
-        return when (viewType) {
-            VIEWTYPE_FEED -> FeedHolder(activity, LayoutInflater.from(activity).inflate(R.layout.view_feed, parent, false))
-            VIEWTYPE_FEED_CHILD -> FeedHolder(activity, LayoutInflater.from(activity).inflate(R.layout.view_feed_child, parent, false))
-            VIEWTYPE_TAG -> TagHolder(activity, LayoutInflater.from(activity).inflate(R.layout.view_feed_tag, parent, false))
-            VIEWTYPE_TOP -> TopHolder(activity, LayoutInflater.from(activity).inflate(R.layout.view_feed, parent, false))
-            else -> null
-        }
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder? = when (viewType) {
+        VIEWTYPE_FEED -> FeedHolder(activity, LayoutInflater.from(activity).inflate(R.layout.view_feed, parent, false))
+        VIEWTYPE_FEED_CHILD -> FeedHolder(activity, LayoutInflater.from(activity).inflate(R.layout.view_feed_child, parent, false))
+        VIEWTYPE_TAG -> TagHolder(activity, LayoutInflater.from(activity).inflate(R.layout.view_feed_tag, parent, false))
+        VIEWTYPE_TOP -> TopHolder(activity, LayoutInflater.from(activity).inflate(R.layout.view_feed, parent, false))
+        else -> null
     }
 
 
@@ -130,6 +126,15 @@ internal class FeedsAdapter(private val activity: BaseActivity) : RecyclerView.A
                 fh.title.text = fh.item!!.displayTitle
                 fh.unreadCount.text = "${wrap.unreadCount}"
                 fh.unreadCount.visibility = if (wrap.unreadCount > 0) View.VISIBLE else View.INVISIBLE
+
+                if (fh.item!!.icon != null) {
+                    // Take up width
+                    holder.icon.visibility = View.VISIBLE
+                    // Load image when item has been measured
+                    holder.itemView.viewTreeObserver.addOnPreDrawListener(fh)
+                } else {
+                    holder.icon.visibility = View.GONE
+                }
             }
             VIEWTYPE_TAG -> {
                 val th = holder as TagHolder
