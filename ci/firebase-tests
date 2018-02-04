@@ -1,0 +1,47 @@
+#!/bin/bash
+
+set -euo pipefail
+
+if [ "$#" -ne 2 ]; then
+  echo >&2 "Takes two arguments: the app apk and the test apk"
+  exit 1
+fi
+
+appapk="$1"
+testapk="$2"
+
+CLOUD_PROJECT_ID="northern-gasket-694"
+
+###
+# Setup Gcloud
+###
+wget --quiet --output-document=/tmp/google-cloud-sdk.tar.gz \
+     https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz
+tar zxf /tmp/google-cloud-sdk.tar.gz --directory /tmp
+/tmp/google-cloud-sdk/install.sh --quiet
+source /tmp/google-cloud-sdk/path.bash.inc
+  
+# Setup and configure the project
+gcloud components update
+echo "${CLOUD_PROJECT_ID}"
+gcloud config set project "${CLOUD_PROJECT_ID}"
+
+# Activate cloud credentials
+echo "${SERVICE_ACCOUNT}" > /tmp/service-account.json
+gcloud auth activate-service-account --key-file /tmp/service-account.json
+
+# List available options for logging purpose only (so that we can review available options)
+gcloud firebase test android models list
+gcloud firebase test android versions list
+
+
+###
+# Run tests
+# m0 is Samsung Galaxy S3 and a physical device
+###
+gcloud firebase test android run \
+       --app "${appapk}" \
+       --test "${testapk}" \
+       --timeout 90s \
+       --device model=m0,version=18 \
+       --device model=Nexus6P,version=27

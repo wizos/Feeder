@@ -71,12 +71,34 @@ cache:
       - app/build/reports/androidTests/
       - build/logs/
 
-build:jdk-1.8:
+.firebase_test: &firebase_def
+  tags:
+    - android
+  stage: test
+  before_script:
+    - set -euo pipefail
+    - apt-get --quiet update --yes
+      && apt-get --quiet install --yes --no-install-recommends wget
+                                                               tar    
+  script:
+    - ci/firebase-tests app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+  artifacts:
+    paths:
+      - app/build/reports/androidTests/
+      - build/logs/
+
+build-app:
   <<: *build_def
 
-unit-tests:jdk-1.8:
+unit-tests:
   <<: *test_def
 
+instrumentation-tests:
+  <<: *firebase_def
+  dependencies:
+    - build-app
+  when: manual
+  
 #test:emulator-18:
 #  <<: *emulator_def
 #  variables:
