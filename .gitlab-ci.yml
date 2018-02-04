@@ -72,8 +72,6 @@ cache:
       - build/logs/
 
 .firebase_test: &firebase_def
-  tags:
-    - android
   stage: test
   before_script:
     - set -euo pipefail
