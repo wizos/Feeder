@@ -39,9 +39,17 @@ gcloud firebase test android versions list
 # Run tests
 # m0 is Samsung Galaxy S3 and a physical device
 ###
+# echo y
 gcloud firebase test android run \
        --app "${appapk}" \
        --test "${testapk}" \
        --timeout 90s \
        --device model=m0,version=18 \
        --device model=Nexus6P,version=27
+
+# This costs money
+#        --results-bucket "cloud-test-${CLOUD_PROJECT_ID}" \
+
+#mkdir -p firebase
+
+#gsutil -m cp -r -U "$(gsutil ls gs://cloud-test-${CLOUD_PROJECT_ID} | tail -1)" firebase/ # | true

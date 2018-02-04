@@ -79,7 +79,9 @@ cache:
     - set -euo pipefail
     - apt-get --quiet update --yes
       && apt-get --quiet install --yes --no-install-recommends wget
-                                                               tar    
+                                                               tar
+                                                               python-pip
+    - pip install -U crcmod
   script:
     - ci/firebase-tests app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
   artifacts:
