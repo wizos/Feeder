@@ -31,21 +31,13 @@ cache:
     - ci/before
     - chmod +x ./gradlew
 
-.sdk: &before_metal
-  before_script:
-    - set -euo pipefail
-    - export GRADLE_USER_HOME="$(pwd)/.gradle"
-    - export ANDROID_HOME="$(pwd)/.androidhome"
-    - export PATH="${ANDROID_HOME}/emulator/:${ANDROID_HOME}/tools/bin/:${ANDROID_HOME}/tools/:${ANDROID_HOME}/platform-tools/:${PATH}"
-    - ci/before
-    - chmod +x ./gradlew
-
 .build: &build_def
   <<: *before_docker
   stage: build
   script:
     - ./gradlew assemble -PdisablePreDex
     - ./gradlew assembleAndroidTest -PdisablePreDex
+    - ./gradlew check -PdisablePreDex
   artifacts:
     paths:
     - app/build/outputs/
@@ -57,19 +49,6 @@ cache:
   script:
     - ./gradlew check -PdisablePreDex
   artifacts:
-
-.emulator_test: &emulator_def
-  <<: *before_metal
-  tags:
-    - metal
-    - android
-  stage: test
-  script:
-    - ci/emulator-tests ${ANDROID_EMULATOR_SDK}
-  artifacts:
-    paths:
-      - app/build/reports/androidTests/
-      - build/logs/
 
 .firebase_test: &firebase_def
   stage: test
@@ -90,26 +69,8 @@ cache:
 build-app:
   <<: *build_def
 
-unit-tests:
-  <<: *test_def
-
 instrumentation-tests:
   <<: *firebase_def
   dependencies:
     - build-app
   when: manual
-  
-#test:emulator-18:
-#  <<: *emulator_def
-#  variables:
-#    ANDROID_EMULATOR_SDK: "18"
-
-#test:emulator-25:
-#  <<: *emulator_def
-#  variables:
-#    ANDROID_EMULATOR_SDK: "25"
-
-#test:emulator-26:
-#  <<: *emulator_def
-#  variables:
-#    ANDROID_EMULATOR_SDK: "26"
