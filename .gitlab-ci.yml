@@ -48,7 +48,7 @@ variables:
   artifacts:
 
 .firebase_test: &firebase_def
-  image: buildpack-deps
+  image: buildpack-deps:buster-scm
   stage: test
   before_script:
     - set -euo pipefail
