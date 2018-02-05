@@ -35,9 +35,7 @@ cache:
   <<: *before_docker
   stage: build
   script:
-    - ./gradlew assemble -PdisablePreDex
-    - ./gradlew assembleAndroidTest -PdisablePreDex
-    - ./gradlew check -PdisablePreDex
+    - ./gradlew -PdisablePreDex assemble assembleAndroidTest check
   artifacts:
     paths:
     - app/build/outputs/
