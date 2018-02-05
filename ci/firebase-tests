@@ -32,8 +32,8 @@ gcloud auth activate-service-account --key-file /tmp/service-account.json
 rm -f /tmp/service-account.json
 
 # List available options for logging purpose only (so that we can review available options)
-gcloud firebase test android models list
-gcloud firebase test android versions list
+#gcloud firebase test android models list
+#gcloud firebase test android versions list
 
 
 ###
