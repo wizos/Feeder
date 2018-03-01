@@ -77,11 +77,13 @@ fun notifyInBackground(context: Context) {
     }
 }
 
-fun cancelNotificationInBackground(context: Context, feedItemId: Long) {
+fun cancelNotificationInBackground(context: Context, vararg feedItemIds: Long) {
     val appContext = context.applicationContext
     launch(Background) {
         val nm = appContext.notificationManager
-        nm.cancel(feedItemId.toInt())
+        feedItemIds.forEach {
+            nm.cancel(it.toInt())
+        }
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
             notifyInBackground(appContext)

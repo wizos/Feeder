@@ -68,9 +68,7 @@ import com.nononsenseapps.feeder.util.TabletUtils
 import com.nononsenseapps.feeder.util.addDynamicShortcutToFeed
 import com.nononsenseapps.feeder.util.bundle
 import com.nononsenseapps.feeder.util.firstOrNull
-import com.nononsenseapps.feeder.util.markAllAsRead
-import com.nononsenseapps.feeder.util.markFeedAsRead
-import com.nononsenseapps.feeder.util.markTagAsRead
+import com.nononsenseapps.feeder.util.markItemsAsRead
 import com.nononsenseapps.feeder.util.notifyAllUris
 import com.nononsenseapps.feeder.util.removeDynamicShortcutToFeed
 import com.nononsenseapps.feeder.util.reportShortcutToFeedUsed
@@ -365,21 +363,25 @@ class FeedFragment : Fragment(), LoaderManager.LoaderCallbacks<Any> {
     }
 
     private fun markAsRead() {
-        // TODO this actually marks all items as read - whereas UI only displays 50 of them
         val appContext = context?.applicationContext
-        val feedId = this.id
-        val feedTag = this.feedTag
         if (appContext != null) {
-            // TODO cancel notifications for tags and such once we handle the specific items
             launch(Background) {
-                when {
-                    feedId > 0 -> {
-                        appContext.contentResolver.markFeedAsRead(feedId)
-                        cancelNotificationInBackground(appContext, feedId)
-                    }
-                    feedTag != null -> appContext.contentResolver.markTagAsRead(feedTag)
-                    else -> appContext.contentResolver.markAllAsRead()
-                }
+                val unreadItemsInAdapter = (0..(adapter?.items?.size() ?: 0))
+                        .mapNotNull {
+                            try {
+                            adapter?.items?.get(it)
+                            } catch (e: Exception) {
+                                null
+                            }
+                        }
+                        .fold(mutableListOf<Long>()) { list, item ->
+                            if (item.unread) {
+                                list.add(item.id)
+                            }
+                            list
+                        }
+                appContext.contentResolver.markItemsAsRead(unreadItemsInAdapter.toLongArray())
+                cancelNotificationInBackground(appContext, *unreadItemsInAdapter.toLongArray())
             }
         }
     }

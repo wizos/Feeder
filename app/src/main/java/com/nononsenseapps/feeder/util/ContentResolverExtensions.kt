@@ -63,6 +63,13 @@ fun ContentResolver.markItemsAsNotified(ids: LongArray, notified: Boolean = true
     }
 }
 
+fun ContentResolver.markItemsAsRead(ids: LongArray, read: Boolean = true) {
+    panicIfOnUiThread()
+    updateFeedItems(ids) {
+        setInt(COL_UNREAD to (if (read) 0 else 1))
+    }
+}
+
 fun ContentResolver.markItemAsReadAndNotified(id: Long, read: Boolean = true, notified: Boolean = true) {
     panicIfOnUiThread()
     updateFeedItem(id) {
