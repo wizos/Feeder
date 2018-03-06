@@ -23,6 +23,7 @@ import android.content.Intent
 import android.database.Cursor
 import android.graphics.Point
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentActivity
@@ -32,6 +33,7 @@ import android.support.v4.content.Loader
 import android.support.v4.view.MenuItemCompat
 import android.support.v7.widget.ShareActionProvider
 import android.text.Spanned
+import android.transition.Transition
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
@@ -117,11 +119,10 @@ class ReaderFragment : Fragment(), LoaderManager.LoaderCallbacks<Any?> {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
-        val theLayout: Int
-        if (TabletUtils.isTablet(activity)) {
-            theLayout = R.layout.fragment_reader_tablet
+        val theLayout: Int = if (TabletUtils.isTablet(activity)) {
+            R.layout.fragment_reader_tablet
         } else {
-            theLayout = R.layout.fragment_reader
+            R.layout.fragment_reader
         }
         val rootView = inflater.inflate(theLayout, container, false)
 
@@ -149,9 +150,56 @@ class ReaderFragment : Fragment(), LoaderManager.LoaderCallbacks<Any?> {
             mAuthorTextView.visibility = View.GONE
         }
 
+        /*
+        titleTextView?.viewTreeObserver?.addOnPreDrawListener(object: ViewTreeObserver.OnPreDrawListener {
+            override fun onPreDraw(): Boolean {
+                titleTextView?.viewTreeObserver?.removeOnPreDrawListener(this)
+                Log.d("JONAS", "Starting postponedTransition")
+                activity?.supportStartPostponedEnterTransition()
+                return true
+            }
+        })
+        */
+
         setViewBody()
 
         return rootView
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        activity?.supportStartPostponedEnterTransition()
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            Log.d("JONAS", "Setting transition listener to: ${activity?.window?.sharedElementExitTransition}")
+
+            activity?.window?.sharedElementReturnTransition?.addListener(object : Transition.TransitionListener {
+                override fun onTransitionEnd(transition: android.transition.Transition?) {
+                    Log.d("JONAS", "2onTransitionEnd")
+                }
+
+                override fun onTransitionResume(transition: android.transition.Transition?) {
+                    Log.d("JONAS", "2onTransitionResume")
+                }
+
+                override fun onTransitionPause(transition: android.transition.Transition?) {
+                    Log.d("JONAS", "2onTransitionPause")
+                }
+
+                override fun onTransitionCancel(transition: android.transition.Transition?) {
+                    Log.d("JONAS", "2onTransitionCancel")
+                }
+
+                override fun onTransitionStart(transition: android.transition.Transition?) {
+                    Log.d("JONAS", "2onTransitionStart")
+                    context?.let { context ->
+                        @Suppress("DEPRECATION")
+                        titleTextView?.setTextAppearance(context, R.style.TextAppearance_ListItem_Title_Read)
+                    }
+                }
+
+            })
+        }
     }
 
     private fun setViewTitle() {

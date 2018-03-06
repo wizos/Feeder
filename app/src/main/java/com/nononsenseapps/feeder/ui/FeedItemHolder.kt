@@ -2,6 +2,7 @@ package com.nononsenseapps.feeder.ui
 
 import android.content.Intent
 import android.net.Uri
+import android.support.v4.app.ActivityOptionsCompat
 import android.support.v7.widget.RecyclerView
 import android.text.Spannable
 import android.text.SpannableString
@@ -175,7 +176,21 @@ class FeedItemHolder(val view: View, private val feedAdapter: FeedAdapter) :
                 ReaderActivity.setRssExtras(i, it)
             }
 
-            feedAdapter.feedFragment.startActivity(i)
+            val options = feedAdapter.feedFragment.activity?.let { activity ->
+                // the transition name "title" is defined in both layouts
+                Log.d("JONAS", "Kicking off transition")
+                //ActivityOptionsCompat.makeScaleUpAnimation(view, 0, 0, view.width, view.height)
+
+                ActivityOptionsCompat.makeSceneTransitionAnimation(
+                        activity,
+                        android.support.v4.util.Pair<View, String>(titleTextView, "title")
+                        //android.support.v4.util.Pair<View, String>(view, "entire")
+                )
+                //                 Pair<View, String>(authorTextView, "author")
+
+            }
+
+            feedAdapter.feedFragment.startActivity(i, options?.toBundle())
         } else {
             // Mark as read
             val contentResolver = feedAdapter.feedFragment.context?.contentResolver

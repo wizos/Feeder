@@ -3,6 +3,7 @@ package com.nononsenseapps.feeder.ui
 import android.content.Intent
 import android.os.Bundle
 import android.support.v4.app.Fragment
+import android.util.Log
 import android.view.MenuItem
 import android.view.View
 import com.nononsenseapps.feeder.R
@@ -35,6 +36,11 @@ class ReaderActivity : BaseActivity() {
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Fragment will start the transition once it has been laid out and measured
+        Log.d("JONAS", "Postponing transition")
+        supportPostponeEnterTransition()
+
         setContentView(R.layout.activity_reader)
         initializeActionBar()
         val ab = supportActionBar

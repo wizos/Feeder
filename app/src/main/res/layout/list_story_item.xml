@@ -1,50 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:minHeight="?android:listPreferredItemHeight">
-<FrameLayout
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content"
+  android:minHeight="?android:listPreferredItemHeight">
+
+  <FrameLayout
     android:id="@+id/check_bg"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:visibility="invisible"
-    android:background="?itemSwipingBGColor">
-    <ImageView
-        android:id="@+id/check_left"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_gravity="start|center_vertical"
-        android:layout_marginStart="8dp"
-        android:visibility="invisible"
-        android:src="@drawable/ic_action_visibility"
-        android:contentDescription="@string/indicator_for_mark_as_read" />
+    android:background="?itemSwipingBGColor"
+    android:visibility="invisible">
 
     <ImageView
-        android:id="@+id/check_right"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_gravity="end|center_vertical"
-        android:layout_marginEnd="8dp"
-        android:visibility="invisible"
-        android:src="@drawable/ic_action_visibility"
-        android:contentDescription="@string/indicator_for_mark_as_read" />
+      android:id="@+id/check_left"
+      android:layout_width="48dp"
+      android:layout_height="48dp"
+      android:layout_gravity="start|center_vertical"
+      android:layout_marginStart="8dp"
+      android:contentDescription="@string/indicator_for_mark_as_read"
+      android:src="@drawable/ic_action_visibility"
+      android:visibility="invisible" />
 
-</FrameLayout>
+    <ImageView
+      android:id="@+id/check_right"
+      android:layout_width="48dp"
+      android:layout_height="48dp"
+      android:layout_gravity="end|center_vertical"
+      android:layout_marginEnd="8dp"
+      android:contentDescription="@string/indicator_for_mark_as_read"
+      android:src="@drawable/ic_action_visibility"
+      android:visibility="invisible" />
 
-    <FrameLayout
-        android:id="@+id/swiping_item"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+  </FrameLayout>
 
-        <com.nononsenseapps.feeder.views.ListStoryItem
-            android:id="@+id/story"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="?android:selectableItemBackground"
-            android:minHeight="?android:listPreferredItemHeight"
-            android:paddingStart="@dimen/keyline_1"
-            tools:ignore="RtlSymmetry" />
-    </FrameLayout>
+  <FrameLayout
+    android:id="@+id/swiping_item"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <com.nononsenseapps.feeder.views.ListStoryItem
+      android:id="@+id/story"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:background="?android:selectableItemBackground"
+      android:minHeight="?android:listPreferredItemHeight"
+      android:paddingStart="@dimen/keyline_1"
+      android:transitionName="entire"
+      tools:ignore="RtlSymmetry" />
+  </FrameLayout>
 
 </FrameLayout>
