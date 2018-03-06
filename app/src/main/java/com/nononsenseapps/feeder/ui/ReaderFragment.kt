@@ -39,6 +39,7 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import com.nononsenseapps.feeder.R
@@ -126,11 +127,10 @@ class ReaderFragment : Fragment(), LoaderManager.LoaderCallbacks<Any?> {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
-        val theLayout: Int
-        if (TabletUtils.isTablet(activity)) {
-            theLayout = R.layout.fragment_reader_tablet
+        val theLayout: Int = if (TabletUtils.isTablet(activity)) {
+            R.layout.fragment_reader_tablet
         } else {
-            theLayout = R.layout.fragment_reader
+            R.layout.fragment_reader
         }
         val rootView = inflater.inflate(theLayout, container, false)
 
@@ -274,8 +274,16 @@ class ReaderFragment : Fragment(), LoaderManager.LoaderCallbacks<Any?> {
                 true
             }
             R.id.action_extract_article -> {
+                var progressBar: ProgressBar? = null
+                activity?.let {
+                    if (it is ReaderActivity) {
+                        progressBar = it.progressBar
+                    }
+                }
+
                 articleTextExtractorTask = ArticleTextExtractorTask({
                     Log.d("ArticleExtration", "Got a result, non-null? ${it != null}")
+                    progressBar?.visibility = View.GONE
                     if (it != null) {
                         rssItem = rssItem?.copy(description = it)
 
@@ -291,6 +299,8 @@ class ReaderFragment : Fragment(), LoaderManager.LoaderCallbacks<Any?> {
                         Toast.makeText(context, "Full text extraction failed", Toast.LENGTH_SHORT).show()
                     }
                 })
+
+                progressBar?.visibility = View.VISIBLE
                 articleTextExtractorTask?.execute(rssItem)
                 true
             }
