@@ -366,6 +366,9 @@ class FeedFragment : Fragment(), LoaderManager.LoaderCallbacks<Any> {
 
     private fun markAsRead() {
         // TODO this actually marks all items as read - whereas UI only displays 50 of them
+        // Remove items from UI
+        adapter?.items?.clear()
+        // Remove items from DB
         val appContext = context?.applicationContext
         val feedId = this.id
         val feedTag = this.feedTag
