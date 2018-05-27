@@ -432,23 +432,23 @@ open class BaseActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<Sor
                 uri = URI_FEEDSWITHCOUNTS,
                 projection = FIELDS_VIEWCOUNT
         ) { cursor ->
-            val topTag = FeedWrapper(tag = "", isTop = true)
+            val topTag = FeedWrapper(tag = "", isTop = true, id = ALL_FEEDS_ID)
+            val starTag = FeedWrapper(tag = "", isStar = true, id = STARRED_ITEMS_ID)
             val tags: MutableMap<String, FeedWrapper> = ArrayMap()
-            tags[""] = topTag
-            val data: MutableList<FeedWrapper> = mutableListOf(topTag)
+            val data: MutableList<FeedWrapper> = mutableListOf(topTag, starTag)
 
             cursor?.forEach {
                 val feed = FeedWrapper(item = it.asFeed())
 
-                if (!tags.contains(feed.tag)) {
-                    val tag = FeedWrapper(tag = feed.tag)
-                    data.add(tag)
-                    tags[feed.tag] = tag
-                }
-
                 topTag.unreadCount += feed.unreadCount
-                // Avoid adding twice for top tag
+
                 if (feed.tag.isNotEmpty()) {
+                    if (!tags.contains(feed.tag)) {
+                        val tag = FeedWrapper(tag = feed.tag)
+                        data.add(tag)
+                        tags[feed.tag] = tag
+                    }
+
                     tags[feed.tag]!!.unreadCount += feed.unreadCount
                 }
 

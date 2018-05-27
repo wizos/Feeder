@@ -50,6 +50,7 @@ import com.nononsenseapps.feeder.db.COL_FEED
 import com.nononsenseapps.feeder.db.COL_ID
 import com.nononsenseapps.feeder.db.COL_NOTIFY
 import com.nononsenseapps.feeder.db.COL_PUBDATE
+import com.nononsenseapps.feeder.db.COL_STARRED
 import com.nononsenseapps.feeder.db.COL_TAG
 import com.nononsenseapps.feeder.db.COL_TITLE
 import com.nononsenseapps.feeder.db.COL_UNREAD
@@ -94,8 +95,11 @@ const val ARG_FEED_TITLE = "feed_title"
 const val ARG_FEED_URL = "feed_url"
 const val ARG_FEED_TAG = "feed_tag"
 // Filter for database loader
-const val ONLY_UNREAD = COL_UNREAD + " IS 1 "
-const val AND_UNREAD = " AND " + ONLY_UNREAD
+const val ONLY_UNREAD = "$COL_UNREAD IS 1 "
+const val AND_UNREAD = " AND $ONLY_UNREAD"
+
+const val ALL_FEEDS_ID = -10L
+const val STARRED_ITEMS_ID = -20L
 
 class FeedFragment : Fragment(), LoaderManager.LoaderCallbacks<Any> {
 
@@ -118,18 +122,19 @@ class FeedFragment : Fragment(), LoaderManager.LoaderCallbacks<Any> {
     private var checkAllButton: View? = null
     private var notify = 0
     private var notifyCheck: CheckedTextView? = null
-    internal var selectedItem: FeedItemSQL? = null
 
     /**
      * @return SQL selection
      */
-    protected val loaderSelection: String?
+    private val loaderSelection: String?
         get() {
-            var filter: String? = null
-            if (id > 0) {
-                filter = COL_FEED + " IS ? "
-            } else if (feedTag != null) {
-                filter = COL_TAG + " IS ? "
+            var filter: String? =
+            when {
+                id > 0 -> "$COL_FEED IS ? "
+                id == ALL_FEEDS_ID -> null
+                id == STARRED_ITEMS_ID -> "$COL_STARRED IS ?"
+                feedTag != null -> "$COL_TAG IS ? "
+                else -> null
             }
 
             val onlyUnread = PrefUtils.isShowOnlyUnread(activity!!)
@@ -145,16 +150,15 @@ class FeedFragment : Fragment(), LoaderManager.LoaderCallbacks<Any> {
     /**
      * @return args that match getLoaderSelection
      */
-    protected val loaderSelectionArgs: Array<String>?
+    private val loaderSelectionArgs: Array<String>?
         get() {
-            var args: Array<String>? = null
-            if (id > 0) {
-                args = Util.LongsToStringArray(this.id)
-            } else if (feedTag != null) {
-                args = Util.ToStringArray(this.feedTag)
+            return when {
+                id > 0 -> Util.LongsToStringArray(id)
+                id == ALL_FEEDS_ID ->  null
+                id == STARRED_ITEMS_ID -> arrayOf("1")
+                feedTag != null -> Util.ToStringArray(feedTag)
+                else -> null
             }
-
-            return args
         }
 
     init {
@@ -176,14 +180,10 @@ class FeedFragment : Fragment(), LoaderManager.LoaderCallbacks<Any> {
             url = arguments!!.getString(ARG_FEED_URL)
             feedTag = arguments!!.getString(ARG_FEED_TAG)
 
-            // It's a feedTag, use as title
-            if (id < 1) {
-                title = feedTag
-            }
-
-            // Special feedTag
-            if (id < 1 && (title == null || title!!.isEmpty())) {
-                title = getString(R.string.all_feeds)
+            when {
+                id == ALL_FEEDS_ID -> title = getString(R.string.all_feeds)
+                id == STARRED_ITEMS_ID -> title = "Stars TODO"
+                id < 1 -> title = feedTag
             }
         }
 
@@ -529,7 +529,7 @@ class FeedFragment : Fragment(), LoaderManager.LoaderCallbacks<Any> {
     }
 
     @Suppress("UNCHECKED_CAST")
-    override fun onLoadFinished(cursorLoader: Loader<Any?>, result: Any?) {
+    override fun onLoadFinished(cursorLoader: Loader<Any>, result: Any?) {
         when {
             FEEDITEMS_LOADER == cursorLoader.id -> {
                 val map = result as Map<FeedItemSQL, Int>

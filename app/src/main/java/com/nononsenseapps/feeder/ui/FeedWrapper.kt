@@ -2,12 +2,12 @@ package com.nononsenseapps.feeder.ui
 
 import com.nononsenseapps.feeder.db.FeedSQL
 
-class FeedWrapper(val item: FeedSQL?, val tag: String, val isTop: Boolean) {
+class FeedWrapper(val item: FeedSQL?, val tag: String, val isTop: Boolean, val isStar: Boolean, val id: Long) {
 
     @JvmOverloads
-    constructor(tag: String, isTop: Boolean = false): this(item = null, tag = tag, isTop = isTop)
+    constructor(tag: String, isTop: Boolean = false, isStar: Boolean = false, id: Long = -1): this(item = null, tag = tag, isTop = isTop, isStar = isStar, id = id)
 
-    constructor(item: FeedSQL): this(item = item, tag = item.tag, isTop = false)
+    constructor(item: FeedSQL): this(item = item, tag = item.tag, isTop = false, isStar = false, id = item.id)
 
     val isTag: Boolean
         get() = item == null
@@ -24,6 +24,9 @@ class FeedWrapper(val item: FeedSQL?, val tag: String, val isTop: Boolean) {
             // Top tag is always at the top (implies empty tags)
             isTop -> -1
             other.isTop -> 1
+            // Stars are sorted second
+            isStar -> -1
+            other.isStar -> 1
             // Feeds with no tags are always last
             isTag && !other.isTag && other.tag.isEmpty() -> -1
             !isTag && other.isTag && tag.isEmpty() -> 1

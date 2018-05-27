@@ -16,6 +16,7 @@ import com.nononsenseapps.feeder.db.COL_GUID
 import com.nononsenseapps.feeder.db.COL_ID
 import com.nononsenseapps.feeder.db.COL_NOTIFIED
 import com.nononsenseapps.feeder.db.COL_NOTIFY
+import com.nononsenseapps.feeder.db.COL_STARRED
 import com.nononsenseapps.feeder.db.COL_TAG
 import com.nononsenseapps.feeder.db.COL_UNREAD
 import com.nononsenseapps.feeder.db.FEED_FIELDS
@@ -91,6 +92,20 @@ fun ContentResolver.markFeedAsRead(feedId: Long) {
             where = "$COL_FEED IS ?",
             params = arrayListOf(feedId)) {
         setInt(COL_UNREAD to 0)
+    }
+}
+
+fun ContentResolver.markItemAsStarred(itemId: Long) {
+    panicIfOnUiThread()
+    updateFeedItem(itemId) {
+        setInt(COL_STARRED to 1)
+    }
+}
+
+fun ContentResolver.markItemAsUnStarred(itemId: Long) {
+    panicIfOnUiThread()
+    updateFeedItem(itemId) {
+        setInt(COL_STARRED to 0)
     }
 }
 

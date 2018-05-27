@@ -22,10 +22,11 @@ internal class FeedsAdapter(private val activity: BaseActivity) : RecyclerView.A
 
     override fun getItemId(position: Int): Long {
         val item = visibleItems[position]
-        return if (item.item != null) {
-            item.item.id
-        } else {
-            item.hashCode().toLong()
+        return when {
+            item.isTop -> item.id
+            item.isStar -> item.id
+            item.item != null -> item.id
+            else -> item.hashCode().toLong()
         }
     }
 
@@ -33,6 +34,7 @@ internal class FeedsAdapter(private val activity: BaseActivity) : RecyclerView.A
         val item = visibleItems[position]
         return when {
             item.isTop -> VIEWTYPE_TOP
+            item.isStar -> VIEWTYPE_STARS
             item.isTag -> VIEWTYPE_TAG
             item.tag.isEmpty() -> VIEWTYPE_FEED
             else -> VIEWTYPE_FEED_CHILD
@@ -49,6 +51,7 @@ internal class FeedsAdapter(private val activity: BaseActivity) : RecyclerView.A
         visibleItems = allItems.filter {
             when {
                 it.isTop -> true
+                it.isStar -> true
                 it.isTag -> expandedTags.contains("")
                 else -> expandedTags.contains(it.tag)
             }
@@ -60,9 +63,8 @@ internal class FeedsAdapter(private val activity: BaseActivity) : RecyclerView.A
                 val newItem: FeedWrapper = visibleItems[newItemPosition]
 
                 return when {
-                    oldItem.isTag && newItem.isTag -> oldItem.tag == newItem.tag
-                    !oldItem.isTag && !newItem.isTag -> oldItem.item?.id == newItem.item?.id
-                    else -> false
+                    oldItem.isTag && newItem.isTag && oldItem.id != newItem.id -> oldItem.tag == newItem.tag
+                    else -> oldItem.id == newItem.id
                 }
             }
 
@@ -115,6 +117,7 @@ internal class FeedsAdapter(private val activity: BaseActivity) : RecyclerView.A
             VIEWTYPE_FEED_CHILD -> FeedHolder(activity, LayoutInflater.from(activity).inflate(R.layout.view_feed_child, parent, false))
             VIEWTYPE_TAG -> TagHolder(activity, LayoutInflater.from(activity).inflate(R.layout.view_feed_tag, parent, false))
             VIEWTYPE_TOP -> TopHolder(activity, LayoutInflater.from(activity).inflate(R.layout.view_feed, parent, false))
+            VIEWTYPE_STARS -> StarsHolder(activity, LayoutInflater.from(activity).inflate(R.layout.view_feed, parent, false))
             // VIEWTYPE_FEED
             else -> FeedHolder(activity, LayoutInflater.from(activity).inflate(R.layout.view_feed, parent, false))
         }
@@ -148,6 +151,10 @@ internal class FeedsAdapter(private val activity: BaseActivity) : RecyclerView.A
                 tp.unreadCount.text = "${wrap.unreadCount}"
                 tp.unreadCount.visibility = if (wrap.unreadCount > 0) View.VISIBLE else View.INVISIBLE
             }
+            VIEWTYPE_STARS -> {
+                val stars = holder as StarsHolder
+                stars.unreadCount.visibility = View.INVISIBLE
+            }
         }
     }
 
@@ -158,5 +165,6 @@ internal class FeedsAdapter(private val activity: BaseActivity) : RecyclerView.A
         private val VIEWTYPE_TAG = 1
         private val VIEWTYPE_FEED = 2
         private val VIEWTYPE_FEED_CHILD = 3
+        private val VIEWTYPE_STARS = 4
     }
 }

@@ -104,6 +104,7 @@ class ReaderActivity : BaseActivity() {
             intent.putExtra(ARG_AUTHOR, rssItem.author)
             intent.putExtra(ARG_FEEDTITLE, rssItem.feedtitle)
             intent.putExtra(ARG_FEED_URL, rssItem.feedUrl.toString())
+            intent.putExtra(ARG_STARRED, rssItem.starred)
         }
     }
 }

@@ -53,6 +53,8 @@ import com.nononsenseapps.feeder.util.TabletUtils
 import com.nononsenseapps.feeder.util.asFeedItem
 import com.nononsenseapps.feeder.util.firstOrNull
 import com.nononsenseapps.feeder.util.markItemAsReadAndNotified
+import com.nononsenseapps.feeder.util.markItemAsStarred
+import com.nononsenseapps.feeder.util.markItemAsUnStarred
 import com.nononsenseapps.feeder.util.openLinkInBrowser
 import com.nononsenseapps.feeder.util.sloppyLinkToStrictURL
 import com.nononsenseapps.feeder.views.ObservableScrollView
@@ -70,6 +72,7 @@ const val ARG_ID = "dbid"
 const val ARG_FEEDTITLE = "feedtitle"
 const val ARG_AUTHOR = "author"
 const val ARG_DATE = "date"
+const val ARG_STARRED = "starred"
 
 private const val TEXT_LOADER = 1
 private const val ITEM_LOADER = 2
@@ -191,6 +194,16 @@ class ReaderFragment : Fragment(), LoaderManager.LoaderCallbacks<Any?> {
     override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
         inflater!!.inflate(R.menu.reader, menu)
 
+        menu?.findItem(R.id.action_star)?.let {
+            if (rssItem!!.starred) {
+                it.setIcon(R.drawable.ic_action_unstar)
+                it.isChecked = true
+            } else {
+                it.setIcon(R.drawable.ic_action_star)
+                it.isChecked = false
+            }
+        }
+
         // Locate MenuItem with ShareActionProvider
         val shareItem = menu!!.findItem(R.id.action_share)
 
@@ -219,6 +232,30 @@ class ReaderFragment : Fragment(), LoaderManager.LoaderCallbacks<Any?> {
 
     override fun onOptionsItemSelected(menuItem: MenuItem?): Boolean {
         return when (menuItem!!.itemId) {
+            R.id.action_star -> {
+                val rssItemId = rssItem!!.id
+                val checked = menuItem.isChecked
+
+                if (checked) {
+                    menuItem.setIcon(R.drawable.ic_action_star)
+                } else {
+                    menuItem.setIcon(R.drawable.ic_action_unstar)
+                }
+
+                menuItem.isChecked = !checked
+
+                context?.applicationContext?.let { appContext ->
+                    launch(Background) {
+                        if (checked) {
+                            appContext.contentResolver.markItemAsUnStarred(rssItemId)
+                        } else {
+                            appContext.contentResolver.markItemAsStarred(rssItemId)
+                        }
+                    }
+                }
+
+                true
+            }
             R.id.action_open_in_webview -> {
                 // Open in web view
                 rssItem?.let { rssItem ->

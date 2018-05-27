@@ -1,5 +1,6 @@
 package com.nononsenseapps.feeder.db
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
@@ -13,8 +14,8 @@ import com.nononsenseapps.feeder.util.sloppyLinkToStrictURL
 import java.io.File
 import java.util.*
 
-val DATABASE_VERSION = 6
-private val DATABASE_NAME = "rssDatabase"
+const val DATABASE_VERSION = 7
+private const val DATABASE_NAME = "rssDatabase"
 
 class DatabaseHandler constructor(context: Context): SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
     private val context = context.applicationContext
@@ -45,6 +46,12 @@ class DatabaseHandler constructor(context: Context): SQLiteOpenHelper(context, D
                 val parser = OpmlParser(OPMLDatabaseHandler(db))
                 parser.parseFile(tempFile.absolutePath)
             }
+            if (oldVersion < 7) {
+                db.execSQL("""
+                    ALTER TABLE FeedItem
+                      ADD COLUMN starred INTEGER NOT NULL DEFAULT 0
+                    """)
+            }
         } catch (e: Throwable) {
             throw RuntimeException(e)
         }
@@ -61,13 +68,13 @@ class DatabaseHandler constructor(context: Context): SQLiteOpenHelper(context, D
     }
 
     private fun deleteEverything(db: SQLiteDatabase) {
-        db.execSQL("DROP TRIGGER IF EXISTS " + TRIGGER_NAME)
+        db.execSQL("DROP TRIGGER IF EXISTS $TRIGGER_NAME")
 
-        db.execSQL("DROP VIEW IF EXISTS " + VIEWCOUNT_NAME)
-        db.execSQL("DROP VIEW IF EXISTS " + VIEWTAGS_NAME)
+        db.execSQL("DROP VIEW IF EXISTS $VIEWCOUNT_NAME")
+        db.execSQL("DROP VIEW IF EXISTS $VIEWTAGS_NAME")
 
-        db.execSQL("DROP TABLE IF EXISTS " + FEED_TABLE_NAME)
-        db.execSQL("DROP TABLE IF EXISTS " + FEED_ITEM_TABLE_NAME)
+        db.execSQL("DROP TABLE IF EXISTS $FEED_TABLE_NAME")
+        db.execSQL("DROP TABLE IF EXISTS $FEED_ITEM_TABLE_NAME")
     }
 
     private fun createViewsAndTriggers(db: SQLiteDatabase) {
@@ -78,6 +85,7 @@ class DatabaseHandler constructor(context: Context): SQLiteOpenHelper(context, D
         db.execSQL(CREATE_TAGS_VIEW)
     }
 
+    @SuppressLint("Recycle")
     private fun tags(db: SQLiteDatabase): List<String?> {
         val tags = ArrayList<String?>()
 
@@ -90,6 +98,7 @@ class DatabaseHandler constructor(context: Context): SQLiteOpenHelper(context, D
         return tags
     }
 
+    @SuppressLint("Recycle")
     private fun feedsWithTag(db: SQLiteDatabase): (String?) -> List<FeedSQL> {
         return { tag ->
             val feeds = ArrayList<FeedSQL>()
@@ -110,6 +119,7 @@ class DatabaseHandler constructor(context: Context): SQLiteOpenHelper(context, D
 }
 
 class OPMLDatabaseHandler(val db: SQLiteDatabase) : OPMLParserToDatabase {
+    @SuppressLint("Recycle")
     override fun getFeed(url: String): FeedSQL {
         db.query(FEED_TABLE_NAME,
                 FEED_FIELDS, "$COL_URL IS ?",

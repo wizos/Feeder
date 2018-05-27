@@ -138,13 +138,13 @@ class FeedActivity : BaseActivity() {
         } else if (lastTag != null || lastId > 0) {
             FeedFragment.newInstance(lastId, "", "", lastTag)
         } else {
-            FeedFragment.newInstance(-10, null, null, null)
+            FeedFragment.newInstance(ALL_FEEDS_ID, null, null, null)
         }
     }
 
     fun showAllFeeds(overrideCurrent: Boolean = false) {
         if (fragment == null || overrideCurrent) {
-            onNavigationDrawerItemSelected(-10, null, null, null)
+            onNavigationDrawerItemSelected(ALL_FEEDS_ID, null, null, null)
         }
     }
 

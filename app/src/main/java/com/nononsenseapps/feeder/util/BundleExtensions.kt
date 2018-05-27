@@ -3,6 +3,7 @@ package com.nononsenseapps.feeder.util
 import android.os.Bundle
 import com.nononsenseapps.feeder.db.FeedItemSQL
 import com.nononsenseapps.feeder.ui.ARG_FEED_URL
+import com.nononsenseapps.feeder.ui.ARG_STARRED
 import org.joda.time.DateTime
 
 inline fun bundle(init: Bundle.() -> Unit): Bundle {
@@ -31,6 +32,7 @@ fun Bundle.asFeedItem(): FeedItemSQL {
             author = getString(ARG_AUTHOR),
             feedtitle = getString(ARG_FEEDTITLE, ""),
             feedUrl = sloppyLinkToStrictURL(getString(ARG_FEED_URL, "")),
+            starred = getBoolean(ARG_STARRED, false),
             pubDate = when(getString(ARG_DATE)) {
                 null -> null
                 else -> {

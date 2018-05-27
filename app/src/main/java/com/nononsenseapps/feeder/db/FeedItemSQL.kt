@@ -10,12 +10,14 @@ import com.nononsenseapps.feeder.ui.ARG_FEED_URL
 import com.nononsenseapps.feeder.ui.ARG_ID
 import com.nononsenseapps.feeder.ui.ARG_IMAGEURL
 import com.nononsenseapps.feeder.ui.ARG_LINK
+import com.nononsenseapps.feeder.ui.ARG_STARRED
 import com.nononsenseapps.feeder.ui.ARG_TITLE
 import com.nononsenseapps.feeder.util.bundle
 import com.nononsenseapps.feeder.util.contentValues
 import com.nononsenseapps.feeder.util.getInt
 import com.nononsenseapps.feeder.util.getLong
 import com.nononsenseapps.feeder.util.getString
+import com.nononsenseapps.feeder.util.setBoolean
 import com.nononsenseapps.feeder.util.setInt
 import com.nononsenseapps.feeder.util.setLong
 import com.nononsenseapps.feeder.util.setString
@@ -43,6 +45,7 @@ const val COL_AUTHOR = "author"
 const val COL_PUBDATE = "pubdate"
 const val COL_UNREAD = "unread"
 const val COL_NOTIFIED = "notified"
+const val COL_STARRED = "starred"
 // These fields corresponds to columns in Feed table
 const val COL_FEED = "feed"
 const val COL_FEEDTITLE = "feedtitle"
@@ -52,14 +55,14 @@ const val COL_FEEDURL = "feedurl"
 @JvmField
 val FEED_ITEM_FIELDS = arrayOf(COL_ID, COL_TITLE, COL_DESCRIPTION, COL_PLAINTITLE, COL_PLAINSNIPPET,
         COL_IMAGEURL, COL_LINK, COL_AUTHOR, COL_PUBDATE, COL_UNREAD, COL_FEED, COL_TAG,
-        COL_ENCLOSURELINK, COL_FEEDTITLE, COL_NOTIFIED, COL_GUID, COL_FEEDURL)
+        COL_ENCLOSURELINK, COL_FEEDTITLE, COL_NOTIFIED, COL_GUID, COL_FEEDURL, COL_STARRED)
 
 // In list avoid loading potentially big description field
 @JvmField
 val FEED_ITEM_FIELDS_FOR_LIST =
         arrayOf(COL_ID, COL_PLAINTITLE, COL_PLAINSNIPPET, COL_IMAGEURL, COL_LINK, COL_AUTHOR,
                 COL_PUBDATE, COL_UNREAD, COL_FEED, COL_TAG, COL_ENCLOSURELINK, COL_FEEDTITLE,
-                COL_NOTIFIED, COL_GUID, COL_FEEDURL)
+                COL_NOTIFIED, COL_GUID, COL_FEEDURL, COL_STARRED)
 
 val CREATE_FEED_ITEM_TABLE = """
     CREATE TABLE $FEED_ITEM_TABLE_NAME (
@@ -80,6 +83,7 @@ val CREATE_FEED_ITEM_TABLE = """
       $COL_FEEDTITLE TEXT NOT NULL,
       $COL_FEEDURL TEXT NOT NULL,
       $COL_TAG TEXT NOT NULL,
+      $COL_STARRED INTEGER NOT NULL DEFAULT 0,
       FOREIGN KEY($COL_FEED)
         REFERENCES $FEED_TABLE_NAME($COL_ID)
         ON DELETE CASCADE,
@@ -119,6 +123,7 @@ data class FeedItemSQL(val id: Long = -1,
                        val feedtitle: String = "",
                        val feedUrl: URL = sloppyLinkToStrictURL(""),
                        val notified: Boolean = false,
+                       val starred: Boolean = false,
         // Variable to stop UI flickering
                        var unread: Boolean = false,
                        val feedid: Long = -1) {
@@ -168,6 +173,7 @@ data class FeedItemSQL(val id: Long = -1,
                 setInt(COL_NOTIFIED to if (notified) 1 else 0)
                 setString(COL_GUID to guid)
                 setString(COL_TAG to tag)
+                setInt(COL_STARRED to if (starred) 1 else 0)
 
                 setStringMaybe(COL_IMAGEURL to imageurl)
                 setStringMaybe(COL_LINK to link)
@@ -196,6 +202,7 @@ data class FeedItemSQL(val id: Long = -1,
         setString(ARG_AUTHOR to author)
         setString(ARG_DATE to pubDateString)
         setString(ARG_FEED_URL to feedUrl.toString())
+        setBoolean(ARG_STARRED to starred)
     }
 }
 
@@ -232,6 +239,10 @@ fun Cursor.asFeedItem(): FeedItemSQL {
                     dt
                 }
             },
-            enclosurelink = getString(COL_ENCLOSURELINK))
+            enclosurelink = getString(COL_ENCLOSURELINK),
+            starred = when (getInt(COL_STARRED) ?: 0) {
+                1 -> true
+                else -> false
+            })
 }
 

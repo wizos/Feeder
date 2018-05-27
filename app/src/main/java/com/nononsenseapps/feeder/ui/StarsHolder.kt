@@ -5,12 +5,12 @@ import android.view.View
 import android.widget.TextView
 import com.nononsenseapps.feeder.R
 
-class TopHolder(private val activity: BaseActivity, v: View) : RecyclerView.ViewHolder(v), View.OnClickListener {
+class StarsHolder(private val activity: BaseActivity, v: View) : RecyclerView.ViewHolder(v), View.OnClickListener {
     val title: TextView = v.findViewById(R.id.feed_name)
     val unreadCount: TextView = v.findViewById(R.id.feed_unreadcount)
 
     init {
-        title.setText(R.string.all_feeds)
+        title.setText("Stars TODO")
         v.setOnClickListener(this)
     }
 
@@ -21,6 +21,6 @@ class TopHolder(private val activity: BaseActivity, v: View) : RecyclerView.View
      */
     override fun onClick(v: View) {
         activity.drawerLayout?.closeDrawers()
-        activity.onNavigationDrawerItemSelected(ALL_FEEDS_ID, null, null, null)
+        activity.onNavigationDrawerItemSelected(STARRED_ITEMS_ID, null, null, null)
     }
 }

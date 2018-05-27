@@ -28,7 +28,7 @@ fun prune(context: Context) {
     // Fetch all feeds first
     val feedIds = getAllFeedIds(context)
 
-    // Leave 50 items for each feed
+    // Leave 50 unstarred items for each feed
     for (feedId in feedIds) {
         for (itemId in getItemsToDelete(context, feedId)) {
             addDelete(itemId, operations)
@@ -51,7 +51,7 @@ private fun addDelete(itemId: Long, operations: ArrayList<ContentProviderOperati
 }
 
 /**
- * Get a list of all feed item ids in the specified list which should be pruned.
+ * Get a list of all un-starred feed item ids in the specified list which should be pruned.
  *
  * @param listId of the list within items are found
  */
@@ -63,8 +63,8 @@ private fun getItemsToDelete(context: Context, listId: Long): List<Long> {
         cursor = context.contentResolver.query(URI_FEEDITEMS.buildUpon()
                 .appendQueryParameter(QUERY_PARAM_SKIP, "${maximumItemCountPerFeed(context)}").build(),
                 arrayOf(COL_ID),
-                "$COL_FEED IS ? ",
-                arrayOf(java.lang.Long.toString(listId)),
+                "$COL_FEED IS ? AND $COL_STARRED IS ?",
+                arrayOf(java.lang.Long.toString(listId), "0"),
                 "$COL_PUBDATE DESC")
 
         while (cursor != null && cursor.moveToNext()) {

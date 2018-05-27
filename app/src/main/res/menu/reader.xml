@@ -22,6 +22,12 @@
   xmlns:tools="http://schemas.android.com/tools"
   tools:context=".ui.ReaderActivity">
   <item
+    android:id="@+id/action_star"
+    android:checkable="true"
+    android:icon="@drawable/ic_action_star"
+    android:title="Star TODO"
+    app:showAsAction="ifRoom" />
+  <item
     android:id="@+id/action_open_enclosure"
     android:icon="@drawable/ic_action_av_play_circle_outline"
     android:title="@string/open_enclosed_media"
