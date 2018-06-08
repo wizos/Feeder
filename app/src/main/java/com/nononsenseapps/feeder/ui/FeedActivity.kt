@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -13,6 +14,7 @@ import android.os.PersistableBundle
 import android.support.v4.app.Fragment
 import android.support.v4.content.LocalBroadcastManager
 import android.text.Html.fromHtml
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -32,7 +34,10 @@ import com.nononsenseapps.feeder.util.markItemsAsNotified
 import com.nononsenseapps.feeder.util.requestFeedSync
 import com.nononsenseapps.filepicker.AbstractFilePickerActivity
 import kotlinx.coroutines.experimental.launch
+import java.io.ByteArrayInputStream
 import java.io.File
+import java.security.cert.CertificateFactory
+import java.security.cert.X509Certificate
 
 private const val EXPORT_OPML_CODE = 101
 private const val IMPORT_OPML_CODE = 102
@@ -110,6 +115,18 @@ class FeedActivity : BaseActivity() {
             // Sync all feeds
             contentResolver.requestFeedSync()
             PrefUtils.markFirstBootAfterDatabaseUpgradeDone(this)
+        }
+
+        packageManager?.getPackageInfo(packageName, PackageManager.GET_SIGNATURES)?.signatures?.forEach {
+            ByteArrayInputStream(it.toByteArray()).use {
+                val cert: X509Certificate = CertificateFactory.getInstance("X509").generateCertificate(it) as X509Certificate
+
+                Log.d("JONAS", """
+                    Subject: ${cert.subjectDN}
+                    Issuer: ${cert.issuerDN}
+                    Serial: ${cert.serialNumber}
+                    """)
+            }
         }
     }
 

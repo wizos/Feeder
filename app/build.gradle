@@ -1,6 +1,13 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
+def gitSha = "Unknown"
+
+try {
+  gitSha = 'git rev-parse --short HEAD'.execute([], project.rootDir).text.trim()
+} catch (ignored) {
+}
+
 android {
   buildToolsVersion '27.0.3'
 
@@ -23,6 +30,9 @@ android {
     compileSdkVersion 27
     minSdkVersion 18
     targetSdkVersion 27
+
+    buildConfigField "String", "GIT_SHA", "\"$gitSha\""
+    buildConfigField "Long", "BUILD_TIME_UTC", "${Calendar.getInstance(TimeZone.getTimeZone("UTC")).timeInMillis}L"
 
     // For espresso tests
     testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
