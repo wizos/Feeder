@@ -1,6 +1,5 @@
 package com.nononsenseapps.feeder.ui
 
-import android.app.Activity
 import android.app.LoaderManager
 import android.content.Context
 import android.content.CursorLoader
@@ -9,6 +8,7 @@ import android.content.Loader
 import android.database.Cursor
 import android.net.Uri
 import android.os.Bundle
+import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.util.Log
@@ -59,8 +59,7 @@ private const val LOADER_TAG_SUGGESTIONS = 1
 private const val TAGSFILTER = "TAGSFILTER"
 
 
-class EditFeedActivity : Activity() {
-
+class EditFeedActivity : AppCompatActivity() {
     private var shouldFinishBack = false
     private var id: Long = -1
     // Views and shit

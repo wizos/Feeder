@@ -1,8 +1,14 @@
 apply plugin: 'com.android.application'
+apply plugin: 'kotlin-kapt'
 apply plugin: 'kotlin-android'
 
 android {
   buildToolsVersion '27.0.3'
+  compileSdkVersion 27
+
+  packagingOptions {
+    exclude 'META-INF/main.kotlin_module'
+  }
 
   lintOptions {
     abortOnError true
@@ -20,12 +26,18 @@ android {
     applicationId "com.nononsenseapps.feeder"
     versionCode 35
     versionName "1.6.7"
-    compileSdkVersion 27
     minSdkVersion 18
     targetSdkVersion 27
 
     // For espresso tests
     testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+    // used by Room, to test migrations
+    javaCompileOptions {
+      annotationProcessorOptions {
+        arguments = ["room.schemaLocation": "$projectDir/schemas".toString()]
+      }
+    }
   }
 
   buildTypes {
@@ -82,6 +94,16 @@ dependencies {
   implementation "com.android.support:support-v4:$supportLibraryVersion"
   implementation "com.android.support:appcompat-v7:$supportLibraryVersion"
   implementation "com.android.support:design:$supportLibraryVersion"
+
+  def lifecycle_version = "1.1.1"
+  // ViewModel and LiveData
+  implementation "android.arch.lifecycle:extensions:$lifecycle_version"
+  kapt "android.arch.lifecycle:compiler:$lifecycle_version"
+
+  def room_version = "1.1.0"
+  implementation "android.arch.persistence.room:runtime:$room_version"
+  kapt "android.arch.persistence.room:compiler:$room_version"
+
   // To support SDK18
   implementation "com.nononsenseapps:filepicker:4.1.0"
   // Better times
@@ -106,7 +128,7 @@ dependencies {
   // For doing coroutines on UI thread
   implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:0.22"
   // tests
-  testImplementation "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
+  testImplementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
   testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
   testImplementation "junit:junit:4.12"
   testImplementation "org.mockito:mockito-core:2.13.0"
@@ -118,4 +140,7 @@ dependencies {
   androidTestImplementation "com.android.support:design:$supportLibraryVersion"
   androidTestImplementation "junit:junit:4.12"
   androidTestImplementation "com.android.support.test:runner:1.0.2"
+  androidTestImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
+  androidTestImplementation "android.arch.core:core-testing:$lifecycle_version"
+  androidTestImplementation "android.arch.persistence.room:testing:$room_version"
 }
