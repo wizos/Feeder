@@ -51,8 +51,9 @@ import com.nononsenseapps.feeder.util.updateFeedWith
 import com.nononsenseapps.feeder.views.FloatLabelLayout
 import com.nononsenseapps.jsonfeed.Feed
 import kotlinx.coroutines.experimental.android.UI
-import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.experimental.withContext
 import java.net.URL
 
 const val TEMPLATE = "template"
@@ -181,32 +182,31 @@ class EditFeedActivity : Activity() {
                         setString(COL_URL to textUrl.text.toString().trim())
                     }
 
-                    launch(UI) {
-                        val feedId: Long = async(BackgroundUI) {
-                            if (id < 1) {
-                                contentResolver.insertFeedWith(values)
-                            } else {
-                                contentResolver.updateFeedWith(id, values)
-                                id
-                            }
-                        }.await()
+                    launch(BackgroundUI) {
+                        val feedId: Long =
+                                if (id < 1) {
+                                    contentResolver.insertFeedWith(values)
+                                } else {
+                                    contentResolver.updateFeedWith(id, values)
+                                    id
+                                }
 
-                        launch(BackgroundUI) {
-                            contentResolver.notifyAllUris()
-                            requestFeedSync(feedId)
-                        }
+                        contentResolver.notifyAllUris()
+                        requestFeedSync(feedId)
 
                         val intent = Intent(Intent.ACTION_VIEW, Uri.withAppendedPath(URI_FEEDS, "$feedId"))
                         intent.putExtra(ARG_FEED_TITLE, title)
                                 .putExtra(ARG_FEED_URL, values.getAsString(COL_URL))
                                 .putExtra(ARG_FEED_TAG, values.getAsString(COL_TAG))
 
-                        setResult(RESULT_OK, intent)
-                        finish()
-                        if (shouldFinishBack) {
-                            // Only care about exit transition
-                            overridePendingTransition(R.anim.to_bottom_right,
-                                    R.anim.to_bottom_right)
+                        withContext(UI) {
+                            setResult(RESULT_OK, intent)
+                            finish()
+                            if (shouldFinishBack) {
+                                // Only care about exit transition
+                                overridePendingTransition(R.anim.to_bottom_right,
+                                        R.anim.to_bottom_right)
+                            }
                         }
                     }
                 }
@@ -457,26 +457,22 @@ class SearchTask(private val feedParser: FeedParser,
 
     override fun doInBackground(vararg urls: URL): Void? {
         val url = urls.firstOrNull() ?: return null
-        val alts = feedParser.getAlternateFeedLinksAtUrl(url)
-        val urlsToParse = when (alts.isNotEmpty()) {
-            true -> alts.map { sloppyLinkToStrictURL(it.first) }
-            false -> listOf(url)
-        }
-        if (isCancelled) {
-            return null
-        }
-        urlsToParse.mapNotNull {
-            try {
-                if (isCancelled) {
-                    return null
+        runBlocking {
+            val alts = feedParser.getAlternateFeedLinksAtUrl(url)
+            val urlsToParse = when (alts.isNotEmpty()) {
+                true -> alts.map { sloppyLinkToStrictURL(it.first) }
+                false -> listOf(url)
+            }
+            urlsToParse.map {
+                try {
+                    if (!isCancelled) {
+                        Log.d("SearchTask", "Parsing $it")
+                        val feed = feedParser.parseFeedUrl(it)
+                        publishProgress(feed)
+                    }
+                } catch (t: Throwable) {
+                    t.printStackTrace()
                 }
-                Log.d("SearchTask", "Parsing $it")
-                val feed = feedParser.parseFeedUrl(it)
-                publishProgress(feed)
-                feed
-            } catch (t: Throwable) {
-                t.printStackTrace()
-                null
             }
         }
         return null

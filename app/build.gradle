@@ -92,9 +92,9 @@ dependencies {
 
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
   // Coroutines
-  implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:0.22"
+  implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlin_coroutines_version"
   // For doing coroutines on UI thread
-  implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:0.22"
+  implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlin_coroutines_version"
   // tests
   testImplementation "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
   testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
