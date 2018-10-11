@@ -514,8 +514,22 @@ class FeedFragment : Fragment(), LoaderManager.LoaderCallbacks<Any> {
         when {
             FEEDITEMS_LOADER == cursorLoader.id -> {
                 val map = result as Map<FeedItemSQL, Int>
+                val prevCount = adapter?.itemCount ?: 0
+                val prevLastId = if (prevCount > 0) {
+                    adapter?.getItemId(prevCount - 1) ?: -1L
+                } else {
+                    -1L
+                }
                 adapter?.updateData(map)
                 val empty = adapter!!.itemCount == 0
+                if (!empty && prevLastId > -1L) {
+                    // Trigger redraw of previous last item to make sure the previous bottom space gets removed
+                    adapter?.getItemPosition(prevLastId)?.let { pos ->
+                        if (pos > -1) {
+                            adapter?.notifyItemChanged(pos)
+                        }
+                    }
+                }
                 emptyView?.visibility = if (empty) View.VISIBLE else View.GONE
             }
             FEED_LOADER == cursorLoader.id -> {

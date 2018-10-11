@@ -107,6 +107,11 @@ class FeedAdapter(context: Context,
         else -> items.get(position).id
     }
 
+    fun getItemPosition(id: Long): Int =
+            itemMap[id]?.let {
+                items.indexOf(it)
+            } ?: -1
+
     fun setAllAsRead() {
         for (i in 0 until items.size()) {
             val item = items.get(i)
