@@ -22,6 +22,9 @@ interface FeedDao {
     @Delete
     fun deleteFeed(feed: Feed)
 
+    @Query("DELETE FROM feeds")
+    fun deleteAll()
+
     @Query("SELECT * FROM feeds WHERE id IS :feedId")
     fun loadLiveFeed(feedId: Long): LiveData<Feed>
 

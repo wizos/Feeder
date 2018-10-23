@@ -10,12 +10,8 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.os.PersistableBundle
-import android.text.Html.fromHtml
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
-import android.widget.CheckedTextView
-import android.widget.TextView
 import androidx.localbroadcastmanager.content.LocalBroadcastManager.getInstance
 import com.nononsenseapps.feeder.R
 import com.nononsenseapps.feeder.coroutines.Background
@@ -38,12 +34,12 @@ private const val IMPORT_OPML_CODE = 102
 private const val EDIT_FEED_CODE = 103
 
 const val EXTRA_FEEDITEMS_TO_MARK_AS_NOTIFIED: String = "items_to_mark_as_notified"
+const val DEFAULT_OPML_FILENAME = "feeder.opml"
 
 class FeedActivity : BaseActivity() {
     private val fragmentTag = "single_pane"
 
     private var fragment: androidx.fragment.app.Fragment? = null
-    private lateinit var emptyView: View
 
     private val syncReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -79,17 +75,6 @@ class FeedActivity : BaseActivity() {
             }
         } else {
             fragment = supportFragmentManager.findFragmentByTag(fragmentTag)
-        }
-
-        // Empty view
-        emptyView = findViewById(android.R.id.empty)
-        emptyView.visibility = if (fragment == null) View.VISIBLE else View.GONE
-
-        val emptyAddFeed = findViewById<TextView>(R.id.empty_add_feed)
-        @Suppress("DEPRECATION")
-        emptyAddFeed.text = fromHtml(getString(R.string.empty_no_feeds_add))
-        emptyAddFeed.setOnClickListener {
-            startActivityForResult(Intent(this@FeedActivity, EditFeedActivity::class.java), EDIT_FEED_CODE)
         }
     }
 
@@ -151,13 +136,13 @@ class FeedActivity : BaseActivity() {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
                     intent = Intent(Intent.ACTION_CREATE_DOCUMENT)
                     intent.type = "text/opml"
-                    intent.putExtra(Intent.EXTRA_TITLE, "feeder.opml")
+                    intent.putExtra(Intent.EXTRA_TITLE, DEFAULT_OPML_FILENAME)
                 } else {
                     intent = Intent(this, MyFilePickerActivity::class.java)
                     intent.putExtra(AbstractFilePickerActivity.EXTRA_MODE, AbstractFilePickerActivity.MODE_NEW_FILE)
                     intent.putExtra(AbstractFilePickerActivity.EXTRA_ALLOW_EXISTING_FILE, true)
                     intent.putExtra(AbstractFilePickerActivity.EXTRA_START_PATH,
-                            File(Environment.getExternalStorageDirectory(), "feeder.opml").path)
+                            File(Environment.getExternalStorageDirectory(), DEFAULT_OPML_FILENAME).path)
                 }
                 startActivityForResult(intent, EXPORT_OPML_CODE)
                 true
@@ -188,7 +173,6 @@ class FeedActivity : BaseActivity() {
 
     override fun onNavigationDrawerItemSelected(id: Long, title: String?, url: String?, tag: String?) {
         // update the main content by replacing fragments
-        emptyView.visibility = View.GONE
         fragment = FeedFragment.newInstance(id, title, url, tag)
         supportFragmentManager.beginTransaction().replace(R.id.container, fragment as FeedFragment, fragmentTag).commit()
     }
