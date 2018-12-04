@@ -1,79 +1,82 @@
 plugins {
-  id("com.android.application")
-  id("kotlin-android")
-  id("kotlin-android-extensions")
-  id("kotlin-kapt")
+    id("com.android.application")
+    id("kotlin-android")
+    id("kotlin-android-extensions")
+    id("kotlin-kapt")
 }
 
 android {
-  buildToolsVersion = "${Deps.build_tools_version}"
+    buildToolsVersion = Deps.build_tools_version
 
-  lintOptions {
-    abortOnError true
-    explainIssues true
-    ignoreWarnings true
-    textReport true
-    textOutput "stdout"
-    // Should try to remove last two here
-    disable "MissingTranslation", "AppCompatCustomView", "InvalidPackage"
-    // I really want some to show as errors
-    error "InlinedApi", "StringEscaping"
-  }
-
-  defaultConfig {
-    applicationId = "com.nononsenseapps.feeder"
-    versionCode = 42
-    versionName = "1.8.3"
-    compileSdkVersion(28)
-    minSdkVersion(18)
-    targetSdkVersion(28)
-
-    vectorDrawables.useSupportLibrary = true
-
-    // For espresso tests
-    testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-
-    // Export Room schemas
-    javaCompileOptions {
-      annotationProcessorOptions {
-        arguments = ["room.schemaLocation":
-                         "$projectDir/schemas".toString()]
-      }
+    lintOptions {
+        isAbortOnError = true
+        isExplainIssues = true
+        isIgnoreWarnings = true
+        textReport = true
+        textOutput("stdout")
+        // Should try to remove last two here
+        disable("MissingTranslation", "AppCompatCustomView", "InvalidPackage")
+        // I really want some to show as errors
+        error("InlinedApi", "StringEscaping")
     }
-  }
 
-  sourceSets {
-    // To test Room we need to include the schema dir in resources
-    androidTest.assets.srcDirs += files("$projectDir/schemas".toString())
-  }
+    defaultConfig {
+        applicationId = "com.nononsenseapps.feeder"
+        versionCode = 42
+        versionName = "1.8.3"
+        compileSdkVersion(28)
+        minSdkVersion(18)
+        targetSdkVersion(28)
 
-  buildTypes {
-    debug {
-      minifyEnabled = false
+        vectorDrawables.useSupportLibrary = true
+
+        // For espresso tests
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // Export Room schemas
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments = mapOf("room.schemaLocation" to "$projectDir/schemas")
+            }
+        }
     }
-    release {
-      minifyEnabled = false
-      proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
+
+    sourceSets {
+        // To test Room we need to include the schema dir in resources
+        getByName("androidTest").assets.srcDir(File("$projectDir/schemas"))
     }
-  }
 
-  testOptions {
-    unitTests.returnDefaultValues = true
-  }
+    buildTypes {
+        named("debug") {
+            isMinifyEnabled = false
+        }
+        named("release") {
+            isMinifyEnabled = false
+            proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
+        }
+    }
 
-  packagingOptions {
-    // Rome incorrectly bundles stuff in its jar
-    pickFirst "rome-utils-${Deps.rome_version}.jar"
-  }
+    testOptions {
+        unitTests.isReturnDefaultValues = true
+    }
 
-  compileOptions {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
-  }
+    packagingOptions {
+        // Rome incorrectly bundles stuff in its jar
+        pickFirst("rome-utils-${Deps.rome_version}.jar")
+    }
+
+    compileOptions {
+        setSourceCompatibility(JavaVersion.VERSION_1_8)
+        setTargetCompatibility(JavaVersion.VERSION_1_8)
+    }
+}
+
+kapt {
+    useBuildCache = true
 }
 
 dependencies {
-  kapt("androidx.room:room-compiler:${Deps.room_version}")
+    kapt("androidx.room:room-compiler:${Deps.room_version}")
     implementation("androidx.room:room-runtime:${Deps.room_version}")
 
     implementation("android.arch.work:work-runtime-ktx:${Deps.work_version}")
@@ -85,37 +88,37 @@ dependencies {
     implementation("androidx.preference:preference:${Deps.preference_version}")
     implementation("com.google.android.material:material:${Deps.material_version}")
 
-  // ViewModel and LiveData
+    // ViewModel and LiveData
     implementation("androidx.lifecycle:lifecycle-extensions:${Deps.lifecycle_version}")
     implementation("androidx.paging:paging-runtime:${Deps.paging_version}")
 
-  // To support SDK18
+    // To support SDK18
     implementation("com.nononsenseapps:filepicker:4.1.0")
-  // Better times
+    // Better times
     implementation("joda-time:joda-time:2.3")
-  // HTML parsing
+    // HTML parsing
     implementation("org.jsoup:jsoup:1.7.3")
     implementation("org.ccil.cowan.tagsoup:tagsoup:1.2.1")
-  // RSS
+    // RSS
     implementation("com.rometools:rome:${Deps.rome_version}")
     implementation("com.rometools:rome-modules:${Deps.rome_version}")
-  // JSONFeed
-  implementation project(":jsonfeed-parser")
-  // For better fetching
+    // JSONFeed
+    implementation(project(":jsonfeed-parser"))
+    // For better fetching
     implementation("com.squareup.okhttp3:okhttp:${Deps.okhttp_version}")
-  // For supporting missing cyphers on older platforms
+    // For supporting missing cyphers on older platforms
     implementation("org.conscrypt:conscrypt-android:${Deps.conscrypt_version}")
-  // Image loading
+    // Image loading
     implementation("com.github.bumptech.glide:glide:3.7.0")
     implementation("com.github.bumptech.glide:okhttp3-integration:1.4.0@aar")
 
 
     implementation("org.jetbrains.kotlin:kotlin-stdlib:${Deps.kotlin_version}")
-  // Coroutines
+    // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Deps.coroutines_version}")
-  // For doing coroutines on UI thread
+    // For doing coroutines on UI thread
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:${Deps.coroutines_version}")
-  // tests
+    // tests
     testImplementation("org.jetbrains.kotlin:kotlin-stdlib:${Deps.kotlin_version}")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:${Deps.kotlin_version}")
     testImplementation("junit:junit:4.12")
