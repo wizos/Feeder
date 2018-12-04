@@ -1,0 +1,4 @@
+include(":app")
+include(":jsonfeed-parser")
+
+rootProject.name = "feeder"
