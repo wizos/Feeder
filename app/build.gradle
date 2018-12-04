@@ -1,7 +1,7 @@
-apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
-apply plugin: 'kotlin-kapt'
+apply plugin: "com.android.application"
+apply plugin: "kotlin-android"
+apply plugin: "kotlin-android-extensions"
+apply plugin: "kotlin-kapt"
 
 android {
   buildToolsVersion "$build_tools_version"
@@ -11,7 +11,7 @@ android {
     explainIssues true
     ignoreWarnings true
     textReport true
-    textOutput 'stdout'
+    textOutput "stdout"
     // Should try to remove last two here
     disable "MissingTranslation", "AppCompatCustomView", "InvalidPackage"
     // I really want some to show as errors
@@ -51,7 +51,7 @@ android {
     }
     release {
       minifyEnabled false
-      proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+      proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
     }
   }
 
