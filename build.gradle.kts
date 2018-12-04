@@ -22,7 +22,7 @@ allprojects {
     mavenCentral()
   }
 
-  tasks.withType(JavaCompile::class.java) {
+  tasks.withType<JavaCompile> {
     options.isIncremental = true
     options.encoding = "UTF-8"
   }

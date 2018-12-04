@@ -5,6 +5,7 @@ object Deps {
 
     val coroutines_version = "1.0.0"
     val okhttp_version = "3.11.0"
+    val moshi_version = "1.5.0"
     val rome_version = "1.7.1"
     val conscrypt_version = "1.4.1"
 
@@ -25,4 +26,5 @@ object Deps {
     val espresso_version = "3.1.0"
     val uiautomator_version = "2.2.0"
     val test_ext_junit_version = "1.0.0"
+    val junit_version = "4.12"
 }
