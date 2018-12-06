@@ -1,7 +1,7 @@
 object Deps {
     val kotlin_version = "1.3.10"
-    val gradle_build_version = "3.2.0"
-    val build_tools_version = "28.0.2"
+    val gradle_build_version = "3.2.1"
+    val build_tools_version = "28.0.3"
 
     val coroutines_version = "1.0.0"
     val okhttp_version = "3.11.0"
