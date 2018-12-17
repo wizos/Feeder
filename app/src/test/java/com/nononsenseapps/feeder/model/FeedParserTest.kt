@@ -419,6 +419,16 @@ class FeedParserTest {
     }
 
     @Test
+    @Throws(Exception::class)
+    fun washingtonShouldBeParsed() {
+        val feed = FeedParser.parseRssAtomBytes(URL("http://feeds.washingtonpost.com/rss/politics"), washington)
+
+        assertEquals("Politics", feed.title)
+
+        assertEquals(24, feed.items?.size)
+    }
+
+    @Test
     @Ignore
     @Throws(Exception::class)
     fun fz() {
@@ -482,6 +492,9 @@ class FeedParserTest {
 
     private val londoner: InputStream
         get() = javaClass.getResourceAsStream("rss_londoner.xml")!!
+
+    private val washington: ByteArray
+        get() = javaClass.getResourceAsStream("rss_washington.xml")!!.readBytes()
 }
 
 val atomRelative = """
