@@ -14,6 +14,8 @@ import kotlinx.coroutines.withTimeoutOrNull
 import okhttp3.Response
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
+import java.net.URL
+import java.net.URLEncoder
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.math.max
@@ -36,14 +38,17 @@ suspend fun syncFeeds(context: Context,
                 minFeedAgeMinutes = minFeedAgeMinutes
         )
 
-internal suspend fun syncFeeds(db: AppDatabase,
-                               feedParser: FeedParser,
-                               feedId: Long = ID_UNSET,
-                               feedTag: String = "",
-                               maxFeedItemCount: Int = 100,
-                               forceNetwork: Boolean = false,
-                               parallel: Boolean = false,
-                               minFeedAgeMinutes: Int = 15): Boolean {
+internal suspend fun syncFeeds(
+        db: AppDatabase,
+        feedParser: FeedParser,
+        feedId: Long = ID_UNSET,
+        feedTag: String = "",
+        maxFeedItemCount: Int = 100,
+        forceNetwork: Boolean = false,
+        parallel: Boolean = false,
+        minFeedAgeMinutes: Int = 15,
+        fullTextProxy: URL = URL("http://ftr.fivefilters.org/makefulltextfeed.php")
+): Boolean {
     var result = false
     val time = measureTimeMillis {
         coroutineScope {
@@ -70,7 +75,8 @@ internal suspend fun syncFeeds(db: AppDatabase,
                                 db = db,
                                 feedParser = feedParser,
                                 maxFeedItemCount = maxFeedItemCount,
-                                forceNetwork = forceNetwork)
+                                forceNetwork = forceNetwork,
+                                fullTextProxy = fullTextProxy)
                     }
                 }
 
@@ -84,13 +90,16 @@ internal suspend fun syncFeeds(db: AppDatabase,
     return result
 }
 
-private suspend fun syncFeed(feedSql: com.nononsenseapps.feeder.db.room.Feed,
-                             db: AppDatabase,
-                             feedParser: FeedParser,
-                             maxFeedItemCount: Int,
-                             forceNetwork: Boolean = false) {
+private suspend fun syncFeed(
+        feedSql: com.nononsenseapps.feeder.db.room.Feed,
+        db: AppDatabase,
+        feedParser: FeedParser,
+        maxFeedItemCount: Int,
+        forceNetwork: Boolean = false,
+        fullTextProxy: URL
+) {
     try {
-        val response: Response = fetchFeed(feedParser, feedSql, forceNetwork = forceNetwork)
+        val response: Response = fetchFeed(feedParser, feedSql, forceNetwork = forceNetwork, fullTextProxy = fullTextProxy)
                 ?: throw ResponseFailure("Timed out when fetching ${feedSql.url}")
 
         var responseHash = 0
@@ -146,7 +155,10 @@ private suspend fun syncFeed(feedSql: com.nononsenseapps.feeder.db.room.Feed,
             // for the rare case that the job is cancelled prematurely
             feedSql.responseHash = responseHash
             feedSql.title = feed.title ?: feedSql.title
-            feedSql.url = feed.feed_url?.let { sloppyLinkToStrictURLNoThrows(it) } ?: feedSql.url
+            // Don't update url if using extract full text
+            if (!feedSql.extractFullText) {
+                feedSql.url = feed.feed_url?.let { sloppyLinkToStrictURLNoThrows(it) } ?: feedSql.url
+            }
             feedSql.imageUrl = feed.icon?.let { sloppyLinkToStrictURLNoThrows(it) } ?: feedSql.imageUrl
             db.feedDao().upsertFeed(feedSql)
 
@@ -161,13 +173,22 @@ private suspend fun syncFeed(feedSql: com.nononsenseapps.feeder.db.room.Feed,
     }
 }
 
-private suspend fun fetchFeed(feedParser: FeedParser, feedSql: com.nononsenseapps.feeder.db.room.Feed,
-                              timeout: Long = 2L, timeUnit: TimeUnit = TimeUnit.SECONDS,
-                              forceNetwork: Boolean = false): Response? {
+private suspend fun fetchFeed(
+        feedParser: FeedParser, feedSql: com.nononsenseapps.feeder.db.room.Feed,
+        timeout: Long = 2L, timeUnit: TimeUnit = TimeUnit.SECONDS,
+        forceNetwork: Boolean = false,
+        fullTextProxy: URL): Response? {
     return withTimeoutOrNull(timeUnit.toMicros(timeout)) {
-        feedParser.getResponse(feedSql.url, forceNetwork = forceNetwork)
+        feedParser.getResponse(urlToFetch(feedSql, fullTextProxy),
+                forceNetwork = forceNetwork)
     }
 }
+
+internal fun urlToFetch(feedSql: com.nononsenseapps.feeder.db.room.Feed, fullTextProxy: URL): URL =
+        when (feedSql.extractFullText) {
+            true -> URL("$fullTextProxy?url=${URLEncoder.encode(feedSql.url.toString(), "UTF-8")}&max=3&links=preserve")
+            false -> feedSql.url
+        }
 
 internal fun feedsToSync(db: AppDatabase, feedId: Long, tag: String, staleTime: Long = -1L): List<com.nononsenseapps.feeder.db.room.Feed> {
     return when {

@@ -22,7 +22,7 @@ const val ID_ALL_FEEDS: Long = -10
  * 7: Migration to Room
  */
 
-@Database(entities = [Feed::class, FeedItem::class], version = 9)
+@Database(entities = [Feed::class, FeedItem::class], version = 10)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun feedDao(): FeedDao
@@ -54,13 +54,20 @@ abstract class AppDatabase : RoomDatabase() {
     }
 }
 
-val allMigrations = arrayOf(MIGRATION_5_7, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9)
+val allMigrations = arrayOf(MIGRATION_5_7, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10)
 
 @Suppress("ClassName")
 /**
  * 6 represents legacy database
  * 7 represents new Room database
  */
+object MIGRATION_9_10: Migration(9, 10) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        database.execSQL("""
+            ALTER TABLE feeds ADD COLUMN extract_full_text INTEGER NOT NULL DEFAULT 0
+        """.trimIndent())
+    }
+}
 object MIGRATION_8_9: Migration(8, 9) {
     override fun migrate(database: SupportSQLiteDatabase) {
         database.execSQL("""

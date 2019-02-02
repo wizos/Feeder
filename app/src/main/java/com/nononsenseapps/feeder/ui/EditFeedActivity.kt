@@ -9,6 +9,7 @@ import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.*
+import androidx.appcompat.widget.SwitchCompat
 import com.nononsenseapps.feeder.R
 import com.nononsenseapps.feeder.coroutines.CoroutineScopedActivity
 import com.nononsenseapps.feeder.db.URI_FEEDS
@@ -45,6 +46,7 @@ class EditFeedActivity : CoroutineScopedActivity() {
     private lateinit var urlLabel: FloatLabelLayout
     private lateinit var titleLabel: FloatLabelLayout
     private lateinit var tagLabel: FloatLabelLayout
+    private lateinit var switchExtractFullText: SwitchCompat
 
     private var feedTitle: String = ""
 
@@ -74,6 +76,7 @@ class EditFeedActivity : CoroutineScopedActivity() {
         listResults = findViewById(R.id.results_listview)
         emptyText = findViewById(android.R.id.empty)
         loadingProgress = findViewById(R.id.loading_progress)
+        switchExtractFullText = findViewById(R.id.switch_extract_full_text)
         resultAdapter = ResultsAdapter()
         //listResults.emptyView = emptyText
         listResults.setHasFixedSize(true)
@@ -130,7 +133,8 @@ class EditFeedActivity : CoroutineScopedActivity() {
                     title = feedTitle,
                     customTitle = customTitle,
                     tag = textTag.text.toString().trim(),
-                    url = sloppyLinkToStrictURLNoThrows(textUrl.text.toString().trim())
+                    url = sloppyLinkToStrictURLNoThrows(textUrl.text.toString().trim()),
+                    extractFullText = switchExtractFullText.isChecked
             )
 
             launch(Dispatchers.Default) {
@@ -208,6 +212,8 @@ class EditFeedActivity : CoroutineScopedActivity() {
                 // Use append instead of setText to make sure cursor is at end
                 textTag.append(it)
             }
+            // Extract full text
+            switchExtractFullText.isChecked = i.getBooleanExtra(ARG_FEED_EXTRACTFULLTEXT, false)
         }
 
         // Create an adapter

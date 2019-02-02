@@ -48,6 +48,7 @@ const val ARG_FEED_ID = "feed_id"
 const val ARG_FEED_TITLE = "feed_title"
 const val ARG_FEED_URL = "feed_url"
 const val ARG_FEED_TAG = "feed_tag"
+const val ARG_FEED_EXTRACTFULLTEXT = "feed_extractfulltext"
 
 class FeedFragment : CoroutineScopedFragment() {
 

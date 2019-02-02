@@ -50,12 +50,15 @@ class RssLocalSyncKtTest {
         server.start()
     }
 
-    fun insertFeed(title: String, url: URL, raw: String, isJson: Boolean = true): Long {
-        val id = testDb.db.feedDao().insertFeed(Feed(
-                title = title,
-                url = url,
-                tag = ""
-        ))
+    fun insertFeed(title: String, url: URL, raw: String, isJson: Boolean = true): Long =
+            insertFeed(Feed(title = title,
+                    url = url,
+                    tag = ""),
+                    raw = raw,
+                    isJson = isJson)
+
+    fun insertFeed(feed: Feed, raw: String, isJson: Boolean = true): Long {
+        val id = testDb.db.feedDao().insertFeed(feed)
 
         server.setDispatcher(object : Dispatcher() {
             override fun dispatch(request: RecordedRequest?): MockResponse {
@@ -64,7 +67,7 @@ class RssLocalSyncKtTest {
 
         })
 
-        responses[url] = MockResponse().apply {
+        responses[feed.url] = MockResponse().apply {
             setResponseCode(200)
             if (isJson) {
                 setHeader("Content-Type", "application/json")
@@ -391,6 +394,26 @@ class RssLocalSyncKtTest {
             assertEquals("Feed should have no less items than in the raw feed even if that's more than cleanup count",
                     feedItemCount, items.size)
         }
+    }
+
+    @Test
+    fun feedWithExtractFullTextEnabledRequestFullTextFeed() {
+        val feed = Feed(title = "cowboy", url = server.url("/atom.xml").url(), extractFullText = true)
+        val cowboyAtomId = insertFeed(feed, cowboyAtom, isJson = false)
+
+        val fullTextUrl = server.url("/makefulltext")
+
+        TODO("Needs to return a fake full text feed with self link pointing to fulltexturl")
+        responses[fullTextUrl.url()] = MockResponse()
+
+        runBlocking {
+            syncFeeds(db = testDb.db, feedParser = feedParser, feedId = cowboyAtomId)
+        }
+
+        assertEquals(
+                "Feed URL should NOT point to fulltextapi",
+                feed.url,
+                testDb.db.feedDao().loadFeed(cowboyAtomId)!!.url)
     }
 
     val nixosRss: InputStream

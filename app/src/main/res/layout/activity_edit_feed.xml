@@ -75,6 +75,7 @@
           android:layout_height="wrap_content"
           android:layout_marginTop="2dp"
           android:layout_marginBottom="2dp"
+          android:text=""
           android:completionThreshold="1"
           android:hint="@string/tag"
           android:imeOptions="actionDone"
@@ -90,6 +91,16 @@
       <!--android:layout_marginBottom="2dip"-->
       <!--android:layout_marginTop="2dip"-->
       <!--/>-->
+
+      <androidx.appcompat.widget.SwitchCompat
+        android:id="@+id/switch_extract_full_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:layout_marginBottom="2dp"
+        android:contentDescription="extract full text switch"
+        android:text="Extract full text"
+        android:textAppearance="@style/TextAppearance.Title" />
 
       <Button
         android:id="@+id/add_button"
