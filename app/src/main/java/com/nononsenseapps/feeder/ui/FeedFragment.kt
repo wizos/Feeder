@@ -70,6 +70,7 @@ class FeedFragment : CoroutineScopedFragment() {
     private var layoutManager: LinearLayoutManager? = null
     private var checkAllButton: View? = null
     private var notify = false
+    private var extractFullText = false
 
     var feedViewModel: FeedViewModel? = null
     var feedItemsViewModel: FeedItemsViewModel? = null
@@ -126,6 +127,7 @@ class FeedFragment : CoroutineScopedFragment() {
                         this.url = feed.url.toString()
                         this.notify = feed.notify
                         this.feedTag = feed.tag
+                        this.extractFullText = feed.extractFullText
 
                         (activity as BaseActivity).supportActionBar?.title = feed.displayTitle
 
@@ -412,6 +414,7 @@ class FeedFragment : CoroutineScopedFragment() {
                     i.putExtra(ARG_CUSTOMTITLE, customTitle)
                     i.putExtra(ARG_TITLE, title)
                     i.putExtra(ARG_FEED_TAG, feedTag)
+                    i.putExtra(ARG_FEED_EXTRACTFULLTEXT, extractFullText)
                     i.data = Uri.parse(url)
                     startActivity(i)
                 }
