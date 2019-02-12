@@ -8,6 +8,8 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceManager
 import com.nononsenseapps.feeder.R
 import com.nononsenseapps.feeder.db.room.ID_UNSET
+import java.net.MalformedURLException
+import java.net.URL
 
 /**
  * Boolean indicating whether we performed the (one-time) welcome flow.
@@ -37,6 +39,7 @@ const val PREF_SYNC_ONLY_CHARGING = "pref_sync_only_charging"
 const val PREF_SYNC_ONLY_WIFI = "pref_sync_only_wifi"
 const val PREF_SYNC_FREQ = "pref_sync_freq"
 const val PREF_SYNC_ON_RESUME = "pref_sync_on_resume"
+const val PREF_FULLTEXT_URL = "pref_fulltext_url"
 
 /**
  * Image settings
@@ -125,6 +128,13 @@ object PrefUtils {
     fun markWelcomeDone(context: Context) {
         sp(context).edit().putBoolean(PREF_WELCOME_DONE, true).apply()
     }
+
+    fun fullTextExtractionUrl(context: Context): URL? =
+            try {
+                URL(sp(context).getString(PREF_FULLTEXT_URL, "http://ftr.fivefilters.org/makefulltextfeed.php"))
+            } catch (_: MalformedURLException) {
+                null
+            }
 
     fun isNightMode(context: Context): Boolean =
             when (sp(context).getString(PREF_THEME, context.getString(R.string.pref_theme_value_default))) {

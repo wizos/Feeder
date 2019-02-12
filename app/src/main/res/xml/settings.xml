@@ -30,6 +30,12 @@
       android:entryValues="@array/array_max_items_per_feed_options"
       android:key="pref_max_item_count_per_feed"
       android:title="@string/max_feed_items" />
+    <EditTextPreference
+        android:defaultValue="http://ftr.fivefilters.org/makefulltextfeed.php"
+        android:key="pref_fulltext_url"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="@string/full_text_extraction_url" />
   </PreferenceCategory>
   <PreferenceCategory
       android:title="@string/image_loading">

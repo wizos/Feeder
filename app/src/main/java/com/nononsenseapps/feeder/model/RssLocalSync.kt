@@ -35,7 +35,8 @@ suspend fun syncFeeds(context: Context,
                 maxFeedItemCount = PrefUtils.maximumItemCountPerFeed(context),
                 forceNetwork = forceNetwork,
                 parallel = parallel,
-                minFeedAgeMinutes = minFeedAgeMinutes
+                minFeedAgeMinutes = minFeedAgeMinutes,
+                fullTextProxy = PrefUtils.fullTextExtractionUrl(context)
         )
 
 internal suspend fun syncFeeds(
@@ -47,7 +48,7 @@ internal suspend fun syncFeeds(
         forceNetwork: Boolean = false,
         parallel: Boolean = false,
         minFeedAgeMinutes: Int = 15,
-        fullTextProxy: URL = URL("https://feeder.cowboyprogrammer.org/makefulltextfeed.php")
+        fullTextProxy: URL?
 ): Boolean {
     var result = false
     val time = measureTimeMillis {
@@ -96,7 +97,7 @@ private suspend fun syncFeed(
         feedParser: FeedParser,
         maxFeedItemCount: Int,
         forceNetwork: Boolean = false,
-        fullTextProxy: URL
+        fullTextProxy: URL?
 ) {
     try {
         val response: Response = fetchFeed(feedParser, feedSql, forceNetwork = forceNetwork, fullTextProxy = fullTextProxy)
@@ -177,17 +178,17 @@ private suspend fun fetchFeed(
         feedParser: FeedParser, feedSql: com.nononsenseapps.feeder.db.room.Feed,
         timeout: Long = 2L, timeUnit: TimeUnit = TimeUnit.SECONDS,
         forceNetwork: Boolean = false,
-        fullTextProxy: URL): Response? {
+        fullTextProxy: URL?): Response? {
     return withTimeoutOrNull(timeUnit.toMicros(timeout)) {
         feedParser.getResponse(urlToFetch(feedSql, fullTextProxy),
                 forceNetwork = forceNetwork)
     }
 }
 
-internal fun urlToFetch(feedSql: com.nononsenseapps.feeder.db.room.Feed, fullTextProxy: URL): URL =
-        when (feedSql.extractFullText) {
-            true -> URL("$fullTextProxy?url=${URLEncoder.encode(feedSql.url.toString(), "UTF-8")}&max=10&links=preserve")
-            false -> feedSql.url
+internal fun urlToFetch(feedSql: com.nononsenseapps.feeder.db.room.Feed, fullTextProxy: URL?): URL =
+        when {
+            feedSql.extractFullText && fullTextProxy != null -> URL("$fullTextProxy?url=${URLEncoder.encode(feedSql.url.toString(), "UTF-8")}&max=10&links=preserve")
+            else -> feedSql.url
         }
 
 internal fun feedsToSync(db: AppDatabase, feedId: Long, tag: String, staleTime: Long = -1L): List<com.nononsenseapps.feeder.db.room.Feed> {
