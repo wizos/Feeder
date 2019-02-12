@@ -47,7 +47,7 @@ internal suspend fun syncFeeds(
         forceNetwork: Boolean = false,
         parallel: Boolean = false,
         minFeedAgeMinutes: Int = 15,
-        fullTextProxy: URL = URL("http://ftr.fivefilters.org/makefulltextfeed.php")
+        fullTextProxy: URL = URL("https://feeder.cowboyprogrammer.org/makefulltextfeed.php")
 ): Boolean {
     var result = false
     val time = measureTimeMillis {
