@@ -186,7 +186,7 @@ private suspend fun fetchFeed(
 
 internal fun urlToFetch(feedSql: com.nononsenseapps.feeder.db.room.Feed, fullTextProxy: URL): URL =
         when (feedSql.extractFullText) {
-            true -> URL("$fullTextProxy?url=${URLEncoder.encode(feedSql.url.toString(), "UTF-8")}&max=3&links=preserve")
+            true -> URL("$fullTextProxy?url=${URLEncoder.encode(feedSql.url.toString(), "UTF-8")}&max=10&links=preserve")
             false -> feedSql.url
         }
 
