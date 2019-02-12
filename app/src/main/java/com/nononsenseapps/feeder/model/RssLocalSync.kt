@@ -176,7 +176,7 @@ private suspend fun syncFeed(
 
 private suspend fun fetchFeed(
         feedParser: FeedParser, feedSql: com.nononsenseapps.feeder.db.room.Feed,
-        timeout: Long = 2L, timeUnit: TimeUnit = TimeUnit.SECONDS,
+        timeout: Long = 10L, timeUnit: TimeUnit = TimeUnit.SECONDS,
         forceNetwork: Boolean = false,
         fullTextProxy: URL?): Response? {
     return withTimeoutOrNull(timeUnit.toMicros(timeout)) {
