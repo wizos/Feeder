@@ -48,7 +48,7 @@ internal suspend fun syncFeeds(
         forceNetwork: Boolean = false,
         parallel: Boolean = false,
         minFeedAgeMinutes: Int = 15,
-        fullTextProxy: URL?
+        fullTextProxy: URL? = null
 ): Boolean {
     var result = false
     val time = measureTimeMillis {
