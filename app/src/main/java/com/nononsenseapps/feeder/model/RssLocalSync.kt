@@ -101,7 +101,6 @@ private suspend fun syncFeed(
 ) {
     try {
         val response: Response = fetchFeed(feedParser, feedSql, forceNetwork = forceNetwork, fullTextProxy = fullTextProxy)
-                ?: throw ResponseFailure("Timed out when fetching ${feedSql.url}")
 
         var responseHash = 0
 
@@ -176,14 +175,10 @@ private suspend fun syncFeed(
 
 private suspend fun fetchFeed(
         feedParser: FeedParser, feedSql: com.nononsenseapps.feeder.db.room.Feed,
-        timeout: Long = 10L, timeUnit: TimeUnit = TimeUnit.SECONDS,
         forceNetwork: Boolean = false,
-        fullTextProxy: URL?): Response? {
-    return withTimeoutOrNull(timeUnit.toMicros(timeout)) {
-        feedParser.getResponse(urlToFetch(feedSql, fullTextProxy),
-                forceNetwork = forceNetwork)
-    }
-}
+        fullTextProxy: URL?
+): Response =
+        feedParser.getResponse(urlToFetch(feedSql, fullTextProxy), forceNetwork = forceNetwork)
 
 internal fun urlToFetch(feedSql: com.nononsenseapps.feeder.db.room.Feed, fullTextProxy: URL?): URL =
         when {

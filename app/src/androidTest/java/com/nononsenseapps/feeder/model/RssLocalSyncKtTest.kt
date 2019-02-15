@@ -397,6 +397,38 @@ class RssLocalSyncKtTest {
     }
 
     @Test
+    fun slowResponseShouldBeOk() {
+        val feed = Feed(title = "cowboy", url = server.url("/atom.xml").url())
+        val cowboyAtomId = insertFeed(feed, cowboyAtom, isJson = false)
+        responses[feed.url]!!.throttleBody(1024 * 100, 29, TimeUnit.SECONDS)
+
+        runBlocking {
+            syncFeeds(db = testDb.db, feedParser = feedParser, feedId = cowboyAtomId)
+        }
+
+        assertEquals(
+                "Feed should have been parsed from slow response",
+                15,
+                testDb.db.feedItemDao().loadFeedItemsInFeed(cowboyAtomId).size)
+    }
+
+    @Test
+    fun verySlowResponseShouldBeCancelled() {
+        val feed = Feed(title = "cowboy", url = server.url("/atom.xml").url())
+        val cowboyAtomId = insertFeed(feed, cowboyAtom, isJson = false)
+        responses[feed.url]!!.throttleBody(1024 * 100, 31, TimeUnit.SECONDS)
+
+        runBlocking {
+            syncFeeds(db = testDb.db, feedParser = feedParser, feedId = cowboyAtomId)
+        }
+
+        assertEquals(
+                "Feed should not have been parsed from extremely slow response",
+                0,
+                testDb.db.feedItemDao().loadFeedItemsInFeed(cowboyAtomId).size)
+    }
+
+    @Test
     fun feedWithExtractFullTextEnabledRequestFullTextFeed() {
         val feed = Feed(title = "cowboy", url = server.url("/atom.xml").url(), extractFullText = true)
         val cowboyAtomId = insertFeed(feed, cowboyAtom, isJson = false)
