@@ -174,7 +174,8 @@ private suspend fun syncFeed(
 }
 
 private suspend fun fetchFeed(
-        feedParser: FeedParser, feedSql: com.nononsenseapps.feeder.db.room.Feed,
+        feedParser: FeedParser,
+        feedSql: com.nononsenseapps.feeder.db.room.Feed,
         forceNetwork: Boolean = false,
         fullTextProxy: URL?
 ): Response =

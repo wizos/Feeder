@@ -398,9 +398,9 @@ class RssLocalSyncKtTest {
 
     @Test
     fun slowResponseShouldBeOk() {
-        val feed = Feed(title = "cowboy", url = server.url("/atom.xml").url())
-        val cowboyAtomId = insertFeed(feed, cowboyAtom, isJson = false)
-        responses[feed.url]!!.throttleBody(1024 * 100, 29, TimeUnit.SECONDS)
+        val url = server.url("/atom.xml").url()
+        val cowboyAtomId = insertFeed("cowboy", url, cowboyAtom, isJson = false)
+        responses[url]!!.throttleBody(1024 * 100, 29, TimeUnit.SECONDS)
 
         runBlocking {
             syncFeeds(db = testDb.db, feedParser = feedParser, feedId = cowboyAtomId)
@@ -414,9 +414,9 @@ class RssLocalSyncKtTest {
 
     @Test
     fun verySlowResponseShouldBeCancelled() {
-        val feed = Feed(title = "cowboy", url = server.url("/atom.xml").url())
-        val cowboyAtomId = insertFeed(feed, cowboyAtom, isJson = false)
-        responses[feed.url]!!.throttleBody(1024 * 100, 31, TimeUnit.SECONDS)
+        val url = server.url("/atom.xml").url()
+        val cowboyAtomId = insertFeed("cowboy", url, cowboyAtom, isJson = false)
+        responses[url]!!.throttleBody(1024 * 100, 31, TimeUnit.SECONDS)
 
         runBlocking {
             syncFeeds(db = testDb.db, feedParser = feedParser, feedId = cowboyAtomId)
