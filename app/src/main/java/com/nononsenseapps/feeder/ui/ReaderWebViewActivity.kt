@@ -42,6 +42,9 @@ class ReaderWebViewActivity : BaseActivity() {
 
         webView = findViewById(R.id.webview)
 
+        // Bug in Android: WebView resets night mode setting
+        // See: https://stackoverflow.com/questions/54191883/android-bug-loading-wrong-colors-in-night-mode
+        AppCompatDelegate.setDefaultNightMode(PrefUtils.getNightMode(this))
 
         CookieManager.getInstance().setAcceptCookie(false)
         webView?.settings?.javaScriptEnabled = true
