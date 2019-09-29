@@ -8,9 +8,9 @@ variables:
   ANDROID_COMPILE_SDK: "27"
   ANDROID_BUILD_TOOLS: "27.0.1"
 
-cache:
-  paths:
-     - .gradle/
+#cache:
+#  paths:
+#     - .gradle/
 
 .sdk_apt: &before_docker
   before_script:
