@@ -11,6 +11,22 @@ import java.net.URL
 
 val schema: HTMLSchema by lazy { HTMLSchema() }
 
+fun HtmlToMoo(
+        source: String,
+        baseUrl: URL,
+        urlClickListener: UrlClickListener2,
+        kodein: Kodein
+): List<Moo> {
+    val converter = HtmlToMooConverter(
+            source = source,
+            baseUrl = baseUrl,
+            urlClickListener = urlClickListener,
+            kodein = kodein
+    )
+
+    return converter.convert()
+}
+
 fun toSpannedWithImages(
         kodein: Kodein,
         source: String,

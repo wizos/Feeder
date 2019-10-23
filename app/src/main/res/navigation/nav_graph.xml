@@ -43,7 +43,7 @@
   </fragment>
   <fragment
     android:id="@+id/readerFragment"
-    android:name="com.nononsenseapps.feeder.ui.ReaderFragment"
+    android:name="com.nononsenseapps.feeder.ui.ReaderFragment2"
     tools:layout="@layout/fragment_reader">
     <action
       android:id="@+id/action_readerFragment_to_readerWebViewFragment"

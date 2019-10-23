@@ -1,0 +1,122 @@
+package com.nononsenseapps.feeder.ui
+
+import android.annotation.SuppressLint
+import android.util.Log
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.webkit.WebView
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.annotation.LayoutRes
+import androidx.core.text.toSpanned
+import androidx.recyclerview.widget.RecyclerView
+import com.nononsenseapps.feeder.R
+import com.nononsenseapps.feeder.ui.text.*
+import com.nononsenseapps.feeder.util.GlideUtils
+import com.nononsenseapps.feeder.views.LinkedTextView
+
+class ReaderAdapter : RecyclerView.Adapter<ReaderViewHolder>() {
+    private var data: List<Moo> = emptyList()
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ReaderViewHolder =
+            when (MooType.values()[viewType]) {
+                MooType.TEXT -> ReaderTextViewHolder(parent)
+                MooType.IMAGE -> ReaderImageViewHolder(parent)
+                MooType.VIDEO -> ReaderVideoViewHolder(parent)
+                MooType.TABLE -> TODO("not implemented")
+            }
+
+    override fun getItemCount(): Int = data.size
+
+    override fun onBindViewHolder(holder: ReaderViewHolder, position: Int) {
+        when (holder) {
+            is ReaderTextViewHolder -> holder.setText(data[position] as Text)
+            is ReaderImageViewHolder -> holder.setImage(data[position] as Image)
+            is ReaderVideoViewHolder -> holder.setVideo(data[position] as VideoMoo)
+        }
+    }
+
+
+    override fun getItemViewType(position: Int): Int = getItemViewEnumType(position).ordinal
+
+    private fun getItemViewEnumType(position: Int): MooType = when (data[position]) {
+        is Image -> MooType.IMAGE
+        is VideoMoo -> MooType.VIDEO
+        is Table -> MooType.TABLE
+        is Text -> MooType.TEXT
+    }
+
+    fun setData(data: List<Moo>) {
+        this.data = data
+        notifyDataSetChanged()
+    }
+}
+
+enum class MooType {
+    TEXT,
+    IMAGE,
+    VIDEO,
+    TABLE
+}
+
+sealed class ReaderViewHolder(parent: ViewGroup, @LayoutRes layout: Int) :
+        RecyclerView.ViewHolder(LayoutInflater.from(parent.context).inflate(layout, parent, false))
+
+class ReaderTextViewHolder(parent: ViewGroup) : ReaderViewHolder(parent, R.layout.reader_text_moo) {
+    val view = itemView as LinkedTextView
+
+    fun setText(text: Text) {
+        view.text = text.builder.toSpanned()
+    }
+}
+
+class ReaderImageViewHolder(parent: ViewGroup) : ReaderViewHolder(parent, R.layout.reader_image_moo) {
+    val imageView = itemView.findViewById<ImageView>(R.id.image)
+    val labelView = itemView.findViewById<TextView>(R.id.label)
+
+    fun setImage(image: Image) {
+        // TODO errors
+        GlideUtils.glide(
+                imageView.context,
+                image.src.toString(),
+                true // todo Prefs
+        ).fitCenter()
+                .error(
+                        R.drawable.placeholder_image_list_night_64dp
+                        // TODO
+                        /*when (prefs.isNightMode) {
+                            true -> R.drawable.placeholder_image_list_night_64dp
+                            false -> R.drawable.placeholder_image_list_day_64dp
+                        }*/
+                )
+                .into(imageView)
+
+        labelView.text = image.label
+        labelView.visibility = if (image.label?.isNotBlank() == true) View.VISIBLE else View.GONE
+    }
+}
+
+class ReaderVideoViewHolder(parent: ViewGroup) : ReaderViewHolder(parent, R.layout.reader_video_moo) {
+    val webView = itemView as WebView
+
+    init {
+        // TODO clean up resources
+        @SuppressLint("SetJavaScriptEnabled")
+        webView.settings.javaScriptEnabled = true
+        webView.webViewClient = WebViewClientHandler
+    }
+
+
+    fun setVideo(video: VideoMoo) {
+        // TODO this could error
+        webView.loadData(
+                "<iframe width=\"200\" height=\"100\" src=\"${video.video.embed}\" frameborder=\"0\" allow=\"autoplay; encrypted-media\"></iframe>",
+                "text/html",
+                "utf-8"
+        )
+
+        //webView.loadUrl(video.video.link)
+        Log.d("JONAS", "Setting ${video.video}")
+    }
+}

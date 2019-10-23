@@ -14,15 +14,18 @@ import com.nononsenseapps.feeder.db.room.FeedDao
 import com.nononsenseapps.feeder.db.room.FeedItemDao
 import com.nononsenseapps.feeder.di.networkModule
 import com.nononsenseapps.feeder.di.viewModelModule
+import com.nononsenseapps.feeder.ui.text.schema
 import com.nononsenseapps.feeder.util.Prefs
 import com.nononsenseapps.feeder.util.ToastMaker
 import com.nononsenseapps.jsonfeed.cachingHttpClient
 import okhttp3.OkHttpClient
+import org.ccil.cowan.tagsoup.Parser
 import org.conscrypt.Conscrypt
 import org.kodein.di.Kodein
 import org.kodein.di.KodeinAware
 import org.kodein.di.generic.bind
 import org.kodein.di.generic.instance
+import org.kodein.di.generic.provider
 import org.kodein.di.generic.singleton
 import java.security.Security
 
@@ -56,6 +59,19 @@ class FeederApplication : MultiDexApplication(), KodeinAware {
                 cacheDirectory = externalCacheDir ?: filesDir
         ) }
         import(networkModule)
+
+        bind<Parser>() with provider {
+            val parser = Parser()
+            try {
+                parser.setProperty(Parser.schemaProperty, schema)
+            } catch (e: org.xml.sax.SAXNotRecognizedException) {
+                // Should not happen.
+                throw RuntimeException(e)
+            } catch (e: org.xml.sax.SAXNotSupportedException) {
+                throw RuntimeException(e)
+            }
+            parser
+        }
     }
 
     init {

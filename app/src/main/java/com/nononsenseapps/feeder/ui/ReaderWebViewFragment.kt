@@ -177,7 +177,7 @@ class ReaderWebViewFragment : CoroutineScopedKodeinAwareFragment() {
     }
 }
 
-private object WebViewClientHandler : WebViewClient() {
+object WebViewClientHandler : WebViewClient() {
     var onPageStartedListener: ((String?) -> Unit)? = null
 
     override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {

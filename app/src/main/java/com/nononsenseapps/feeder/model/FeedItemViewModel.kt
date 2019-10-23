@@ -10,9 +10,7 @@ import com.nononsenseapps.feeder.R
 import com.nononsenseapps.feeder.base.CoroutineScopedKodeinAwareViewModel
 import com.nononsenseapps.feeder.db.room.FeedItemDao
 import com.nononsenseapps.feeder.db.room.FeedItemWithFeed
-import com.nononsenseapps.feeder.ui.text.UrlClickListener
-import com.nononsenseapps.feeder.ui.text.toSpannedWithImages
-import com.nononsenseapps.feeder.ui.text.toSpannedWithNoImages
+import com.nononsenseapps.feeder.ui.text.*
 import com.nononsenseapps.feeder.util.Prefs
 import com.nononsenseapps.feeder.util.TabletUtils
 import kotlinx.coroutines.Dispatchers
@@ -59,6 +57,19 @@ class FeedItemViewModel(kodein: Kodein) : CoroutineScopedKodeinAwareViewModel(ko
         }
 
         return liveImageText
+    }
+
+    fun getLiveMoo(id: Long, urlClickListener: UrlClickListener2): MediatorLiveData<List<Moo>> {
+        val liveMoo = MediatorLiveData<List<Moo>>()
+        liveMoo.addSource(getLiveItem(id)) { feedItem ->
+            liveMoo.value = if (feedItem == null) {
+                emptyList()
+            } else {
+                HtmlToMoo(feedItem.description, feedItem.feedUrl, urlClickListener, kodein)
+            }
+        }
+
+        return liveMoo
     }
 }
 

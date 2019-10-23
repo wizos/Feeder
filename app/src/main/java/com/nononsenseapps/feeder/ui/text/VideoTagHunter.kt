@@ -14,7 +14,8 @@ fun getVideo(src: String?): Video? {
             Video(
                     src = src,
                     imageUrl = "http://img.youtube.com/vi/$videoId/hqdefault.jpg",
-                    link = "https://www.youtube.com/watch?v=$videoId"
+                    link = "https://www.youtube.com/watch?v=$videoId",
+                    embed = "https://www.youtube.com/embed/$videoId"
             )
         }
     }
@@ -23,7 +24,8 @@ fun getVideo(src: String?): Video? {
 data class Video(val src: String,
                  val imageUrl: String,
         // Youtube needs a different link than embed links
-                 val link: String) {
+                 val link: String,
+                 val embed: String) {
     val width: Int
         get() = 480
 

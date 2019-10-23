@@ -60,6 +60,7 @@ private val HEADER_SIZES = floatArrayOf(1.5f, 1.4f, 1.3f, 1.2f, 1.1f, 1f)
 class HtmlToMooConverter(
         private val source: String,
         private val baseUrl: URL,
+        private val urlClickListener: UrlClickListener2,
         override val kodein: Kodein
 ) : KodeinAware, ContentHandler by ContentHandlerEmptyImpl {
     private val context: Application by instance()
@@ -88,7 +89,6 @@ class HtmlToMooConverter(
     }
     private val quoteGapWidth = context.resources.getDimension(R.dimen.reader_quote_gap_width).roundToInt()
     private val quoteStripeWidth = context.resources.getDimension(R.dimen.reader_quote_stripe_width).roundToInt()
-    private val urlClickListener by instance<UrlClickListener2>()
 
     private val moos = mutableListOf<Moo>()
     private val tagStack = Stack<Tag>()
@@ -703,8 +703,15 @@ class Text(
 
         if (where != len) {
             obj?.level?.let {
-                builder.setSpan(RelativeSizeSpan(HEADER_SIZES[it]), where,
-                        len, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                builder.setSpan(
+                        RelativeSizeSpan(
+                                HEADER_SIZES[(it - 1)
+                                        .coerceAtLeast(0)
+                                        .coerceAtMost(HEADER_SIZES.size - 1)]),
+                        where,
+                        len,
+                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
             }
             builder.setSpan(StyleSpan(Typeface.BOLD), where, len,
                     Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
