@@ -36,15 +36,21 @@ fun relativeLinkIntoAbsolute(base: URL, link: String): String = try {
 /**
  * On error, this method simply returns the original link. It does *not* throw exceptions.
  */
-fun relativeLinkIntoAbsoluteOrNull(base: URL, link: String?): String? = try {
+fun relativeLinkIntoAbsoluteOrNull(base: URL, link: String?): String? =
+        relativeLinkIntoAbsoluteUrlOrNull(base, link)?.toString() ?: link
+
+/**
+ * On error, this method simply returns the original link. It does *not* throw exceptions.
+ */
+fun relativeLinkIntoAbsoluteUrlOrNull(base: URL, link: String?): URL? = try {
     // If no exception, it's valid
     if (link != null) {
-        relativeLinkIntoAbsoluteOrThrow(base, link).toString()
+        relativeLinkIntoAbsoluteOrThrow(base, link)
     } else {
         null
     }
 } catch (_: MalformedURLException) {
-    link
+    null
 }
 
 /**
