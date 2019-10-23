@@ -1,11 +1,9 @@
 package com.nononsenseapps.feeder.ui
 
-import android.annotation.SuppressLint
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.webkit.WebView
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.annotation.LayoutRes
@@ -15,6 +13,9 @@ import com.nononsenseapps.feeder.R
 import com.nononsenseapps.feeder.ui.text.*
 import com.nononsenseapps.feeder.util.GlideUtils
 import com.nononsenseapps.feeder.views.LinkedTextView
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.YouTubePlayerCallback
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 
 class ReaderAdapter : RecyclerView.Adapter<ReaderViewHolder>() {
     private var data: List<Moo> = emptyList()
@@ -98,23 +99,16 @@ class ReaderImageViewHolder(parent: ViewGroup) : ReaderViewHolder(parent, R.layo
 }
 
 class ReaderVideoViewHolder(parent: ViewGroup) : ReaderViewHolder(parent, R.layout.reader_video_moo) {
-    val webView = itemView as WebView
-
-    init {
-        // TODO clean up resources
-        @SuppressLint("SetJavaScriptEnabled")
-        webView.settings.javaScriptEnabled = true
-        webView.webViewClient = WebViewClientHandler
-    }
+    val player = itemView as YouTubePlayerView
 
 
     fun setVideo(video: VideoMoo) {
-        // TODO this could error
-        webView.loadData(
-                "<iframe width=\"200\" height=\"100\" src=\"${video.video.embed}\" frameborder=\"0\" allow=\"autoplay; encrypted-media\"></iframe>",
-                "text/html",
-                "utf-8"
-        )
+        // TODO add lifecycle observer
+        player.getYouTubePlayerWhenReady(object : YouTubePlayerCallback {
+            override fun onYouTubePlayer(youTubePlayer: YouTubePlayer) {
+                youTubePlayer.loadVideo(videoId = video.video.videoId, startSeconds = 0.0f)
+            }
+        })
 
         //webView.loadUrl(video.video.link)
         Log.d("JONAS", "Setting ${video.video}")
