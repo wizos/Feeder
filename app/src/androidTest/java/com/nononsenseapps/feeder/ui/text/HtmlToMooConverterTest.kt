@@ -4,14 +4,10 @@ import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.MediumTest
-import org.ccil.cowan.tagsoup.Parser
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.kodein.di.Kodein
 import org.kodein.di.android.closestKodein
-import org.kodein.di.generic.bind
-import org.kodein.di.generic.singleton
-import org.xml.sax.XMLReader
 import java.net.URL
 import kotlin.test.assertEquals
 
@@ -21,26 +17,12 @@ class HtmlToMooConverterTest {
     private val parentKodein by closestKodein(ApplicationProvider.getApplicationContext() as Context)
     private val kodein by Kodein.lazy {
         extend(parentKodein)
-        bind<XMLReader>() with singleton {
-            val parser = Parser()
-            try {
-                parser.setProperty(Parser.schemaProperty, schema)
-            } catch (e: org.xml.sax.SAXNotRecognizedException) {
-                // Should not happen.
-                throw RuntimeException(e)
-            } catch (e: org.xml.sax.SAXNotSupportedException) {
-                throw RuntimeException(e)
-            }
-            parser
+    }
+    private val urlClickListener = object : UrlClickListener2 {
+        override fun accept(url: String) {
+            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
         }
-        bind<UrlClickListener2>() with singleton {
-            object : UrlClickListener2 {
-                override fun accept(url: String) {
-                    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-                }
 
-            }
-        }
     }
 
     @Test
@@ -53,6 +35,7 @@ class HtmlToMooConverterTest {
         val converter = HtmlToMooConverter(
                 source,
                 baseUrl,
+                urlClickListener,
                 kodein
         )
 
@@ -61,9 +44,7 @@ class HtmlToMooConverterTest {
         assertEquals(1, moos.size)
         assertEquals("""Text and 
 
-a paragraph with bold
-
-""",
+a paragraph with bold""",
                 (moos.first() as Text).builder.toString())
     }
 
@@ -76,12 +57,12 @@ a paragraph with bold
             <img src="http://foo" alt="meh"/>
             And even more text
             </div>
-            </div>
-        """.trimIndent()
+            </div>""".trimIndent()
 
         val converter = HtmlToMooConverter(
                 source,
                 baseUrl,
+                urlClickListener,
                 kodein
         )
 
@@ -102,7 +83,7 @@ a paragraph with bold
                 moos[1]
         )
         assertEquals(
-                "And even more text \n\n",
+                "And even more text ",
                 (moos[2] as Text).builder.toString()
         )
     }

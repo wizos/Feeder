@@ -122,35 +122,19 @@ class HtmlToMooConverter(
 
         val literalFormatting = tagStack.any { it.literalSubFormatting }
 
-        val textMoo = ensureTextMooInProgress()
-
-        /*
-         * Ignore whitespace that immediately follows other whitespace;
-         * newlines count as spaces.
-         */
-        (start until length)
-                .asSequence()
-                .map { ch[it] }
-                .forEach {
-                    if (!literalFormatting && it.isWhitespace()) {
-                        val prev: Char = textMoo.lastOrNull() ?: ' '
-
-                        if (!prev.isWhitespace()) {
-                            textMoo.append(' ')
-                        }
-                    } else {
-                        textMoo.append(it)
-                    }
-                }
+        ensureTextMooInProgress().characters(ch, start, length, literalFormatting)
     }
 
     @SuppressLint("DefaultLocale")
     override fun startElement(uri: String?, tagName: String, qName: String?, attributes: Attributes) =
-            startTag(Tag(
-                    name = tagName.toLowerCase(),
-                    attributes = attributes,
-                    ignored = tagName in ignoredTags,
-                    literalSubFormatting = tagName in literalFormattingTags))
+            startTag(
+                    Tag(
+                            name = tagName.toLowerCase(),
+                            attributes = attributes,
+                            ignored = tagName in ignoredTags,
+                            literalSubFormatting = tagName in literalFormattingTags
+                    )
+            )
 
     @SuppressLint("DefaultLocale")
     override fun endElement(uri: String?, tagName: String, qName: String?) =
@@ -348,6 +332,9 @@ class Text(
         private val urlClickListener: UrlClickListener2,
         val builder: SpannableStringBuilder = SpannableStringBuilder()
 ) : Moo(), Editable by builder {
+    private var pendingParagraph: Boolean = false
+    private var pendingLinebreak: Boolean = false
+
     override fun finalize() {
         // Fix flags and range for paragraph-type markup.
         val obj = builder.getAllSpansWithType<ParagraphStyle>()
@@ -370,9 +357,9 @@ class Text(
 
     fun startTag(tag: Tag, baseUrl: URL) {
         when (tag.name) {
-            "br" -> lineBreak()
-            "p" -> paragraph()
-            "div" -> paragraph()
+            "br" -> pendingLinebreak = true
+            "p" -> pendingParagraph = true
+            "div" -> pendingParagraph = true
             "strong" -> startBold()
             "b" -> startBold()
             "em" -> startItalic()
@@ -399,9 +386,9 @@ class Text(
 
     fun endTag(tag: Tag) {
         when (tag.name) {
-            "br" -> lineBreak()
-            "p" -> paragraph()
-            "div" -> paragraph()
+            "br" -> pendingLinebreak = true
+            "p" -> pendingParagraph = true
+            "div" -> pendingParagraph = true
             "strong" -> endBold()
             "b" -> endBold()
             "em" -> endItalic()
@@ -426,13 +413,13 @@ class Text(
         }
     }
 
-    fun lineBreak() {
+    private fun lineBreak() {
         if (builder.isNotBlank() && builder.last() != '\n') {
             builder.append("\n")
         }
     }
 
-    fun paragraph() {
+    private fun paragraph() {
         if (builder.isNotBlank()) {
             val len = builder.length
             // Make sure it has spaces before and after
@@ -658,7 +645,7 @@ class Text(
             )
         }
 
-        paragraph()
+        pendingParagraph = true
     }
 
     fun endMonoSpace() = endSpan<Monospace>(TypefaceSpan("monospace"))
@@ -739,7 +726,7 @@ class Text(
         }
 
         // and end with two newlines
-        paragraph()
+        pendingParagraph = true
     }
 
     fun endCode() {
@@ -760,6 +747,35 @@ class Text(
             builder.setSpan(BackgroundColorSpan(codeTextBgColor), where, len,
                     Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
         }
+    }
+
+    fun characters(ch: CharArray, start: Int, length: Int, literalFormatting: Boolean) {
+        /*
+         * Ignore whitespace that immediately follows other whitespace;
+         * newlines count as spaces.
+         */
+        (start until (start + length))
+                .asSequence()
+                .map { ch[it] }
+                .forEach {
+                    if (!literalFormatting && it.isWhitespace()) {
+                        val prev: Char = builder.lastOrNull() ?: ' '
+
+                        if (!prev.isWhitespace() && !pendingParagraph && !pendingLinebreak) {
+                            builder.append(' ')
+                        }
+                    } else {
+                        if (pendingParagraph) {
+                            paragraph()
+                        } else if (pendingLinebreak) {
+                            lineBreak()
+                        }
+                        pendingParagraph = false
+                        pendingLinebreak = false
+
+                        builder.append(it)
+                    }
+                }
     }
 
     private object Bold
