@@ -59,7 +59,9 @@ data class FeedItem @Ignore constructor(
         @ColumnInfo(name = COL_UNREAD) var unread: Boolean = true,
         @ColumnInfo(name = COL_NOTIFIED) var notified: Boolean = false,
         @ColumnInfo(name = COL_FEEDID) var feedId: Long? = null,
-        @ColumnInfo(name = COL_FIRSTSYNCEDTIME, typeAffinity = ColumnInfo.INTEGER) var firstSyncedTime: Instant = Instant.EPOCH) {
+        @ColumnInfo(name = COL_FIRSTSYNCEDTIME, typeAffinity = ColumnInfo.INTEGER) var firstSyncedTime: Instant = Instant.EPOCH,
+        @ColumnInfo(name = "engaged") var engaged: Boolean = false
+) {
 
     constructor() : this(id = ID_UNSET)
 

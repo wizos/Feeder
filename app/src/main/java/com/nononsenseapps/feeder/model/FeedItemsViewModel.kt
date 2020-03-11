@@ -33,7 +33,7 @@ class FeedItemsViewModel(kodein: Kodein) : KodeinAwareViewModel(kodein) {
             livePagedAll = LivePagedListBuilder(
                     when {
                         feedId > ID_UNSET -> dao.loadLivePreviews(feedId = feedId)
-                        feedId == ID_ALL_FEEDS -> dao.loadLivePreviews()
+                        feedId == ID_ALL_FEEDS -> dao.loadSmartLivePreviews()
                         tag.isNotEmpty() -> dao.loadLivePreviews(tag = tag)
                         else -> throw IllegalArgumentException("Tag was empty, but no valid feed id was provided either")
                     }, PAGE_SIZE).build()

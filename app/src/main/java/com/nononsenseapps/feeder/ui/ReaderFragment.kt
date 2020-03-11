@@ -31,10 +31,12 @@ import com.nononsenseapps.feeder.util.TabletUtils
 import com.nononsenseapps.feeder.util.bundle
 import com.nononsenseapps.feeder.util.openLinkInBrowser
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.kodein.di.Kodein
 import org.kodein.di.android.x.closestKodein
 import org.kodein.di.generic.instance
+import org.threeten.bp.Duration
 import org.threeten.bp.format.DateTimeFormatter
 import org.threeten.bp.format.FormatStyle
 import java.io.StringReader
@@ -71,10 +73,27 @@ class ReaderFragment : KodeinAwareFragment() {
 
         if (_id > ID_UNSET) {
             val itemId = _id
+            lifecycleScope.launchWhenResumed {
+                // Wait 7 seconds until considering it engaged
+                delay(7_000L)
+                viewModel.markAsEngaged(itemId)
+            }
+
+            lifecycleScope.launchWhenResumed {
+                // Update reading time every 2 seconds
+                val time = Duration.ofSeconds(2)
+                while (true) {
+                    delay(time.toMillis())
+                    rssItem?.feedId?.let { feedId ->
+                        viewModel.addReadingTimeToFeed(feedId, time)
+                    }
+                }
+            }
+
             val appContext = context?.applicationContext
             appContext?.let {
                 lifecycleScope.launchWhenResumed {
-                    viewModel.markAsReadAndNotified(_id)
+                    viewModel.markAsReadAndNotified(itemId)
                     cancelNotification(it, itemId)
                 }
             }
@@ -210,6 +229,7 @@ class ReaderFragment : KodeinAwareFragment() {
                                 bundle {
                                     putString(ARG_URL, link)
                                     putString(ARG_ENCLOSURE, rssItem.enclosureLink)
+                                    putLong(ARG_FEED_ID, rssItem.feedId ?: ID_UNSET)
                                 }
                         )
                     }

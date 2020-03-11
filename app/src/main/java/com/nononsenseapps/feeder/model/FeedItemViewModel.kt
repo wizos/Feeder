@@ -6,6 +6,7 @@ import android.graphics.Point
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.ImageSpan
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.liveData
@@ -15,6 +16,7 @@ import com.nononsenseapps.feeder.base.KodeinAwareViewModel
 import com.nononsenseapps.feeder.blob.blobInputStream
 import com.nononsenseapps.feeder.db.room.FeedItemDao
 import com.nononsenseapps.feeder.db.room.FeedItemWithFeed
+import com.nononsenseapps.feeder.db.room.FeedStatisticDao
 import com.nononsenseapps.feeder.ui.text.UrlClickListener
 import com.nononsenseapps.feeder.ui.text.toSpannedWithImages
 import com.nononsenseapps.feeder.ui.text.toSpannedWithNoImages
@@ -25,12 +27,14 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.withContext
 import org.kodein.di.Kodein
 import org.kodein.di.generic.instance
+import org.threeten.bp.Duration
 import java.io.IOException
 import java.net.URL
 import kotlin.math.roundToInt
 
 @FlowPreview
 class FeedItemViewModel(kodein: Kodein) : KodeinAwareViewModel(kodein) {
+    private val feedStatisticsDao: FeedStatisticDao by instance()
     private val dao: FeedItemDao by instance()
     private val prefs: Prefs by instance()
     val context: Application by kodein.instance()
@@ -105,6 +109,12 @@ class FeedItemViewModel(kodein: Kodein) : KodeinAwareViewModel(kodein) {
 
     suspend fun markAsRead(id: Long, unread: Boolean = false) = dao.markAsRead(id = id, unread = unread)
     suspend fun markAsReadAndNotified(id: Long) = dao.markAsReadAndNotified(id = id)
+
+    suspend fun markAsEngaged(id: Long) = dao.markAsEngaged(id = id).also {
+        Log.d("JONAS", "Marked $id as engaged")
+    }
+
+    suspend fun addReadingTimeToFeed(feedId: Long, time: Duration) = feedStatisticsDao.addReadingTimeToFeed(id = feedId, time = time).also { Log.d("JONAS", "Adding $time to $feedId") }
 }
 
 internal fun Activity.maxImageSize(): Point {

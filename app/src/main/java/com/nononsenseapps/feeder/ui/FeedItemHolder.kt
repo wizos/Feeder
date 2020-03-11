@@ -17,11 +17,22 @@ import androidx.navigation.Navigation.findNavController
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.nononsenseapps.feeder.R
+import com.nononsenseapps.feeder.db.room.ID_UNSET
 import com.nononsenseapps.feeder.model.FeedItemsViewModel
 import com.nononsenseapps.feeder.model.PreviewItem
 import com.nononsenseapps.feeder.model.SettingsViewModel
-import com.nononsenseapps.feeder.util.*
-import kotlinx.coroutines.*
+import com.nononsenseapps.feeder.util.GlideUtils
+import com.nononsenseapps.feeder.util.PREF_VAL_OPEN_WITH_BROWSER
+import com.nononsenseapps.feeder.util.PREF_VAL_OPEN_WITH_READER
+import com.nononsenseapps.feeder.util.PREF_VAL_OPEN_WITH_WEBVIEW
+import com.nononsenseapps.feeder.util.Prefs
+import com.nononsenseapps.feeder.util.bundle
+import com.nononsenseapps.feeder.util.openLinkInBrowser
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.launch
 import org.kodein.di.Kodein
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.closestKodein
@@ -189,6 +200,7 @@ class FeedItemHolder(
                                         bundle {
                                             putString(ARG_URL, it.link)
                                             putString(ARG_ENCLOSURE, it.enclosureLink)
+                                            putLong(ARG_FEED_ID, it.feedId ?: ID_UNSET)
                                         }
                                 )
                             }

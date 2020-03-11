@@ -4,29 +4,43 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Bundle
-import android.view.*
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
 import android.webkit.CookieManager
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.appcompat.widget.ShareActionProvider
 import androidx.core.view.MenuItemCompat
+import androidx.lifecycle.lifecycleScope
 import com.nononsenseapps.feeder.R
 import com.nononsenseapps.feeder.base.KodeinAwareFragment
+import com.nononsenseapps.feeder.db.room.ID_UNSET
+import com.nononsenseapps.feeder.model.FeedItemViewModel
 import com.nononsenseapps.feeder.util.Prefs
 import com.nononsenseapps.feeder.util.openLinkInBrowser
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.delay
 import org.kodein.di.generic.instance
+import org.threeten.bp.Duration
 
 const val ARG_URL = "url"
 
+@FlowPreview
 class ReaderWebViewFragment : KodeinAwareFragment() {
     private var webView: WebView? = null
     var url: String = ""
     private var enclosureUrl: String? = null
     private var shareActionProvider: ShareActionProvider? = null
     private var isWebViewAvailable: Boolean = false
+    private var feedId: Long = ID_UNSET
 
     private val prefs: Prefs by instance()
+    private val viewModel: FeedItemViewModel by instance(arg = this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,9 +48,21 @@ class ReaderWebViewFragment : KodeinAwareFragment() {
         arguments?.let { arguments ->
             url = arguments.getString(ARG_URL, null) ?: ""
             enclosureUrl = arguments.getString(ARG_ENCLOSURE, null)
+            feedId = arguments.getLong(ARG_FEED_ID, ID_UNSET)
         }
 
         setHasOptionsMenu(true)
+
+        if (feedId > ID_UNSET) {
+            lifecycleScope.launchWhenResumed {
+                // Update reading time every 2 seconds
+                val time = Duration.ofSeconds(2)
+                while (true) {
+                    delay(time.toMillis())
+                    viewModel.addReadingTimeToFeed(feedId, time)
+                }
+            }
+        }
     }
 
     /**

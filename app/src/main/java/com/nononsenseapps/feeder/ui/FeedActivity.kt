@@ -16,10 +16,18 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
 import androidx.preference.PreferenceManager
 import com.google.android.material.appbar.AppBarLayout
-import com.google.android.material.appbar.AppBarLayout.LayoutParams.*
+import com.google.android.material.appbar.AppBarLayout.LayoutParams.SCROLL_FLAG_ENTER_ALWAYS
+import com.google.android.material.appbar.AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL
+import com.google.android.material.appbar.AppBarLayout.LayoutParams.SCROLL_FLAG_SNAP
 import com.nononsenseapps.feeder.R
 import com.nononsenseapps.feeder.base.KodeinAwareActivity
-import com.nononsenseapps.feeder.model.*
+import com.nononsenseapps.feeder.db.job.configurePeriodicStatisticsUpdate
+import com.nononsenseapps.feeder.model.FeedListViewModel
+import com.nononsenseapps.feeder.model.FeedUnreadCount
+import com.nononsenseapps.feeder.model.SettingsViewModel
+import com.nononsenseapps.feeder.model.configurePeriodicSync
+import com.nononsenseapps.feeder.model.isOkToSyncAutomatically
+import com.nononsenseapps.feeder.model.requestFeedSync
 import com.nononsenseapps.feeder.util.Prefs
 import com.nononsenseapps.feeder.util.bundle
 import kotlinx.android.synthetic.main.activity_navigation.*
@@ -59,6 +67,8 @@ class FeedActivity : KodeinAwareActivity() {
         }
 
         lifecycleScope.launchWhenStarted {
+            // Enable statistics job
+            configurePeriodicStatisticsUpdate(applicationContext)
             // Enable periodic sync
             configurePeriodicSync(applicationContext, forceReplace = false)
 

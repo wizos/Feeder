@@ -74,8 +74,9 @@ interface FeedItemDao {
         SELECT $previewColumns
         FROM feed_items
         LEFT JOIN feeds ON feed_items.feed_id = feeds.id
-        WHERE feed_id IS :feedId
-        ORDER BY first_synced_time DESC, pub_date DESC
+        LEFT JOIN feed_statistics ON feed_items.feed_id = feed_statistics.feed_id
+        WHERE feed_items.feed_id IS :feedId
+        ORDER BY first_synced_time DESC, drt_smm DESC, pub_date DESC
         """)
     fun loadLivePreviews(feedId: Long): DataSource.Factory<Int, PreviewItem>
 
@@ -83,8 +84,9 @@ interface FeedItemDao {
         SELECT $previewColumns
         FROM feed_items
         LEFT JOIN feeds ON feed_items.feed_id = feeds.id
+        LEFT JOIN feed_statistics ON feed_items.feed_id = feed_statistics.feed_id
         WHERE tag IS :tag
-        ORDER BY first_synced_time DESC, pub_date DESC
+        ORDER BY first_synced_time DESC, drt_smm DESC, pub_date DESC
         """)
     fun loadLivePreviews(tag: String): DataSource.Factory<Int, PreviewItem>
 
@@ -92,7 +94,8 @@ interface FeedItemDao {
         SELECT $previewColumns
         FROM feed_items
         LEFT JOIN feeds ON feed_items.feed_id = feeds.id
-        ORDER BY first_synced_time DESC, pub_date DESC
+        LEFT JOIN feed_statistics ON feed_items.feed_id = feed_statistics.feed_id
+        ORDER BY first_synced_time DESC, drt_smm DESC, pub_date DESC
         """)
     fun loadLivePreviews(): DataSource.Factory<Int, PreviewItem>
 
@@ -100,8 +103,22 @@ interface FeedItemDao {
         SELECT $previewColumns
         FROM feed_items
         LEFT JOIN feeds ON feed_items.feed_id = feeds.id
-        WHERE feed_id IS :feedId AND unread IS :unread
-        ORDER BY first_synced_time DESC, pub_date DESC
+        LEFT JOIN (
+          SELECT AVG(engaged) AS engagement, feed_id
+          FROM feed_items 
+          GROUP BY feed_id
+        ) AS fi2 ON fi2.feed_id = feed_items.feed_id
+        ORDER BY engagement DESC, first_synced_time DESC, pub_date DESC
+        """)
+    fun loadSmartLivePreviews(): DataSource.Factory<Int, PreviewItem>
+
+    @Query("""
+        SELECT $previewColumns
+        FROM feed_items
+        LEFT JOIN feeds ON feed_items.feed_id = feeds.id
+        LEFT JOIN feed_statistics ON feed_items.feed_id = feed_statistics.feed_id
+        WHERE feed_items.feed_id IS :feedId AND unread IS :unread
+        ORDER BY first_synced_time DESC, drt_smm DESC, pub_date DESC
         """)
     fun loadLiveUnreadPreviews(feedId: Long?, unread: Boolean = true): DataSource.Factory<Int, PreviewItem>
 
@@ -109,8 +126,9 @@ interface FeedItemDao {
         SELECT $previewColumns
         FROM feed_items
         LEFT JOIN feeds ON feed_items.feed_id = feeds.id
+        LEFT JOIN feed_statistics ON feed_items.feed_id = feed_statistics.feed_id
         WHERE tag IS :tag AND unread IS :unread
-        ORDER BY first_synced_time DESC, pub_date DESC
+        ORDER BY first_synced_time DESC, drt_smm DESC, pub_date DESC
         """)
     fun loadLiveUnreadPreviews(tag: String, unread: Boolean = true): DataSource.Factory<Int, PreviewItem>
 
@@ -118,8 +136,9 @@ interface FeedItemDao {
         SELECT $previewColumns
         FROM feed_items
         LEFT JOIN feeds ON feed_items.feed_id = feeds.id
+        LEFT JOIN feed_statistics ON feed_items.feed_id = feed_statistics.feed_id
         WHERE unread IS :unread
-        ORDER BY first_synced_time DESC, pub_date DESC
+        ORDER BY first_synced_time DESC, drt_smm DESC, pub_date DESC
         """)
     fun loadLiveUnreadPreviews(unread: Boolean = true): DataSource.Factory<Int, PreviewItem>
 
@@ -176,6 +195,9 @@ interface FeedItemDao {
 
     @Query("UPDATE feed_items SET unread = 0, notified = 1 WHERE id IS :id")
     suspend fun markAsReadAndNotified(id: Long)
+
+    @Query("UPDATE feed_items SET engaged = 1 WHERE id IS :id")
+    suspend fun markAsEngaged(id: Long)
 }
 
 @FlowPreview

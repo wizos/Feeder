@@ -12,6 +12,7 @@ import com.jakewharton.threetenabp.AndroidThreeTen
 import com.nononsenseapps.feeder.db.room.AppDatabase
 import com.nononsenseapps.feeder.db.room.FeedDao
 import com.nononsenseapps.feeder.db.room.FeedItemDao
+import com.nononsenseapps.feeder.db.room.FeedStatisticDao
 import com.nononsenseapps.feeder.di.networkModule
 import com.nononsenseapps.feeder.di.stateModule
 import com.nononsenseapps.feeder.di.viewModelModule
@@ -42,6 +43,7 @@ class FeederApplication : MultiDexApplication(), KodeinAware {
         bind<AppDatabase>() with singleton { AppDatabase.getInstance(this@FeederApplication) }
         bind<FeedDao>() with singleton { instance<AppDatabase>().feedDao() }
         bind<FeedItemDao>() with singleton { instance<AppDatabase>().feedItemDao() }
+        bind<FeedStatisticDao>() with singleton { instance<AppDatabase>().feedStatisticDao() }
 
         import(viewModelModule)
 

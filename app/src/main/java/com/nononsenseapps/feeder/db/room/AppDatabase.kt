@@ -31,11 +31,12 @@ const val ID_ALL_FEEDS: Long = -10
  */
 
 @FlowPreview
-@Database(entities = [Feed::class, FeedItem::class], version = 11)
+@Database(entities = [Feed::class, FeedItem::class, FeedStatistic::class], version = 12)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun feedDao(): FeedDao
     abstract fun feedItemDao(): FeedItemDao
+    abstract fun feedStatisticDao(): FeedStatisticDao
 
     @FlowPreview
     @ExperimentalCoroutinesApi
@@ -60,8 +61,23 @@ abstract class AppDatabase : RoomDatabase() {
         private fun buildDatabase(context: Context): AppDatabase {
             return Room.databaseBuilder(context, AppDatabase::class.java, DATABASE_NAME)
                     .addMigrations(*allMigrations)
+                    .addCallback(triggerCallback)
                     .build()
         }
+    }
+}
+
+val triggerCallback = object: RoomDatabase.Callback() {
+    override fun onOpen(db: SupportSQLiteDatabase) {
+        db.execSQL("""
+            CREATE TEMPORARY TRIGGER IF NOT EXISTS feed_stats_trigger
+            AFTER INSERT ON feeds BEGIN
+              INSERT INTO feed_statistics
+              (feed_id)
+              VALUES (NEW.id);
+            END
+        """.trimIndent())
+        super.onOpen(db)
     }
 }
 
@@ -73,7 +89,8 @@ val allMigrations = arrayOf(
         MIGRATION_7_8,
         MIGRATION_8_9,
         MIGRATION_9_10,
-        MIGRATION_10_11
+        MIGRATION_10_11,
+        MIGRATION_11_12
 )
 
 /*
@@ -81,6 +98,16 @@ val allMigrations = arrayOf(
  * 7 represents new Room database
  */
 
+@FlowPreview
+@ExperimentalCoroutinesApi
+@Suppress("ClassName")
+object MIGRATION_11_12 : Migration(11, 12) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        database.execSQL("""
+            ALTER TABLE feeds ADD COLUMN reading_time INTEGER NOT NULL DEFAULT 0
+        """.trimIndent())
+    }
+}
 
 @FlowPreview
 @ExperimentalCoroutinesApi
