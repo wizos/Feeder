@@ -32,8 +32,8 @@ import kotlinx.coroutines.launch
 import org.kodein.di.Kodein
 import org.kodein.di.android.x.closestKodein
 import org.kodein.di.generic.instance
-import org.threeten.bp.format.DateTimeFormatter
-import org.threeten.bp.format.FormatStyle
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 import java.util.*
 
 const val ARG_TITLE = "title"

@@ -5,7 +5,9 @@ import java.security.KeyManagementException
 import java.security.NoSuchAlgorithmException
 import java.security.cert.CertificateException
 import java.security.cert.X509Certificate
+import javax.net.ssl.HostnameVerifier
 import javax.net.ssl.SSLContext
+import javax.net.ssl.SSLSession
 import javax.net.ssl.TrustManager
 import javax.net.ssl.X509TrustManager
 
@@ -28,7 +30,7 @@ fun OkHttpClient.Builder.trustAllCerts() {
         val sslSocketFactory = sslContext.socketFactory
 
         sslSocketFactory(sslSocketFactory, trustManager)
-                .hostnameVerifier({ _, _ -> true })
+                .hostnameVerifier(HostnameVerifier { _, _ -> true })
     } catch (e: NoSuchAlgorithmException) {
         // ignore
     } catch (e: KeyManagementException) {

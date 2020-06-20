@@ -16,7 +16,7 @@ import com.nononsenseapps.feeder.db.COL_TITLE
 import com.nononsenseapps.feeder.db.COL_URL
 import com.nononsenseapps.feeder.db.FEEDS_TABLE_NAME
 import com.nononsenseapps.feeder.util.sloppyLinkToStrictURL
-import org.threeten.bp.Instant
+import java.time.Instant
 import java.net.URL
 
 @Entity(tableName = FEEDS_TABLE_NAME,

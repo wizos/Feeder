@@ -3,8 +3,8 @@ package com.nononsenseapps.feeder.db.room
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
-import org.threeten.bp.Instant
-import org.threeten.bp.ZonedDateTime
+import java.time.Instant
+import java.time.ZonedDateTime
 
 class ConvertersTest {
     @Test

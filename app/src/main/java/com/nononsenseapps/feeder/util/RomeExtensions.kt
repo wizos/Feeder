@@ -14,9 +14,9 @@ import com.rometools.rome.feed.synd.SyndFeed
 import com.rometools.rome.feed.synd.SyndPerson
 import kotlinx.coroutines.FlowPreview
 import org.jsoup.parser.Parser.unescapeEntities
-import org.threeten.bp.Instant
-import org.threeten.bp.ZoneOffset
-import org.threeten.bp.ZonedDateTime
+import java.time.Instant
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
 import java.net.URL
 
 @FlowPreview

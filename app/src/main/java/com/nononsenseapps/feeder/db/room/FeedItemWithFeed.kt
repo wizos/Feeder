@@ -35,7 +35,7 @@ import com.nononsenseapps.feeder.ui.ARG_TITLE
 import com.nononsenseapps.feeder.util.setLong
 import com.nononsenseapps.feeder.util.setString
 import com.nononsenseapps.feeder.util.sloppyLinkToStrictURLNoThrows
-import org.threeten.bp.ZonedDateTime
+import java.time.ZonedDateTime
 import java.net.URI
 import java.net.URL
 

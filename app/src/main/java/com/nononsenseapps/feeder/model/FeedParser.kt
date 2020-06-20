@@ -140,7 +140,7 @@ class FeedParser(override val kodein: Kodein) : KodeinAware {
     private suspend fun curl(url: URL): String? {
         var result: String? = null
         curlAndOnResponse(url) {
-            result = it.body()?.string()
+            result = it.body?.string()
         }
         return result
     }
@@ -191,30 +191,35 @@ class FeedParser(override val kodein: Kodein) : KodeinAware {
             val decodedPass = URLDecoder.decode(pass, "UTF-8")
             val credentials = Credentials.basic(decodedUser, decodedPass)
             client.newBuilder()
-                    .authenticator { _, response ->
-                        when {
-                            response.request().header("Authorization") != null -> {
-                                null
-                            }
-                            else -> {
-                                response.request().newBuilder()
-                                        .header("Authorization", credentials)
-                                        .build()
-                            }
-                        }
-                    }
-                    .proxyAuthenticator { _, response ->
-                        when {
-                            response.request().header("Proxy-Authorization") != null -> {
-                                null
-                            }
-                            else -> {
-                                response.request().newBuilder()
-                                        .header("Proxy-Authorization", credentials)
-                                        .build()
+                    .authenticator(object : Authenticator {
+                        override fun authenticate(route: Route?, response: Response): Request? {
+                            return when {
+                                response.request.header("Authorization") != null -> {
+                                    null
+                                }
+                                else -> {
+                                    response.request.newBuilder()
+                                            .header("Authorization", credentials)
+                                            .build()
+                                }
                             }
                         }
-                    }.build()
+                    })
+                    .proxyAuthenticator(object : Authenticator {
+                        override fun authenticate(route: Route?, response: Response): Request? {
+                            return when {
+                                response.request.header("Proxy-Authorization") != null -> {
+                                    null
+                                }
+                                else -> {
+                                    response.request.newBuilder()
+                                            .header("Proxy-Authorization", credentials)
+                                            .build()
+                                }
+                            }
+                        }
+
+                    }).build()
         } else {
             client
         }
@@ -254,12 +259,12 @@ class FeedParser(override val kodein: Kodein) : KodeinAware {
         try {
             val feed = when ((response.header("content-type") ?: "").contains("json")) {
                 true -> jsonFeedParser.parseJsonBytes(body)
-                false -> parseRssAtomBytes(response.request().url().url(), body)
+                false -> parseRssAtomBytes(response.request.url.toUrl(), body)
             }
 
             return if (feed.feed_url == null) {
                 // Nice to return non-null value here
-                feed.copy(feed_url = response.request().url().toString())
+                feed.copy(feed_url = response.request.url.toString())
             } else {
                 feed
             }
@@ -273,7 +278,7 @@ class FeedParser(override val kodein: Kodein) : KodeinAware {
      */
     @Throws(FeedParsingError::class)
     suspend fun parseFeedResponseOrFallbackToAlternateLink(response: Response): Feed? =
-            response.body()?.use { responseBody ->
+            response.body?.use { responseBody ->
                 responseBody.bytes().let { body ->
                     // Encoding is not an issue for reading HTML (probably)
                     val alternateFeedLink = findFeedUrl(String(body), preferAtom = true)
@@ -329,7 +334,7 @@ class FeedParser(override val kodein: Kodein) : KodeinAware {
 }
 
 fun Response.safeBody(): ByteArray? {
-    return this.body()?.use { body ->
+    return this.body?.use { body ->
         if (header("Transfer-Encoding") == "chunked") {
             val source =
                     if (header("Content-Encoding") == "gzip") {
@@ -348,7 +353,7 @@ fun Response.safeBody(): ByteArray? {
                 // content-length (I suspect)
                 Log.e(
                         "FeedParser",
-                        "Encountered EOF exception while parsing response with headers: ${headers()}",
+                        "Encountered EOF exception while parsing response with headers: $headers",
                         e
                 )
             }

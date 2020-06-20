@@ -1,6 +1,12 @@
 apply plugin: 'kotlin'
 apply plugin: 'java-library'
 
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+}
+
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     api "com.squareup.okhttp3:okhttp:$okhttp_version"
@@ -9,5 +15,5 @@ dependencies {
     // tests
     testImplementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
-    testImplementation "junit:junit:4.12"
+    testImplementation "junit:junit:4.13"
 }

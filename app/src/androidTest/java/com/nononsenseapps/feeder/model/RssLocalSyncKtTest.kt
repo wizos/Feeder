@@ -26,7 +26,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.kodein.di.android.closestKodein
 import org.kodein.di.generic.instance
-import org.threeten.bp.Instant
+import java.time.Instant
 import java.io.InputStream
 import java.net.URL
 import java.util.concurrent.TimeUnit

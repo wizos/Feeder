@@ -20,7 +20,7 @@ class BugReportKTest {
     @Test
     fun bodyContainsAndroidInformation() {
         assertEquals("""
-            ${BuildConfig.APPLICATION_ID} (flavor ${BuildConfig.FLAVOR.ifBlank { "None" }})
+            ${BuildConfig.APPLICATION_ID} (flavor ${BuildConfig.BUILD_TYPE.ifBlank { "None" }})
             version ${BuildConfig.VERSION_NAME} (code ${BuildConfig.VERSION_CODE})
             on Android ${Build.VERSION.RELEASE} (SDK-${Build.VERSION.SDK_INT})
             on a Tablet? No
@@ -33,7 +33,7 @@ class BugReportKTest {
     @Test
     fun bodyContainsAndroidInformationAsTablet() {
         assertEquals("""
-            ${BuildConfig.APPLICATION_ID} (flavor ${BuildConfig.FLAVOR.ifBlank { "None" }})
+            ${BuildConfig.APPLICATION_ID} (flavor ${BuildConfig.BUILD_TYPE.ifBlank { "None" }})
             version ${BuildConfig.VERSION_NAME} (code ${BuildConfig.VERSION_CODE})
             on Android ${Build.VERSION.RELEASE} (SDK-${Build.VERSION.SDK_INT})
             on a Tablet? Yes

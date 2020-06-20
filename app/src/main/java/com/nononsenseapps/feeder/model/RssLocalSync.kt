@@ -24,8 +24,8 @@ import org.kodein.di.Kodein
 import org.kodein.di.android.closestKodein
 import org.kodein.di.direct
 import org.kodein.di.generic.instance
-import org.threeten.bp.Instant
-import org.threeten.bp.temporal.ChronoUnit
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 import java.io.File
 import java.io.IOException
 import kotlin.math.max
@@ -127,7 +127,7 @@ private suspend fun syncFeed(feedSql: com.nononsenseapps.feeder.db.room.Feed,
                     responseHash = body.contentHashCode()
                     when {
                         !response.isSuccessful -> {
-                            throw ResponseFailure("${response.code()} when fetching ${feedSql.displayTitle}: ${feedSql.url}")
+                            throw ResponseFailure("${response.code} when fetching ${feedSql.displayTitle}: ${feedSql.url}")
                         }
                         feedSql.responseHash == responseHash -> null // no change
                         else -> feedParser.parseFeedResponse(it, body)

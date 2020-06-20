@@ -4,7 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Ignore
 import com.nononsenseapps.feeder.db.room.ID_UNSET
 import com.nononsenseapps.feeder.util.sloppyLinkToStrictURLNoThrows
-import org.threeten.bp.ZonedDateTime
+import java.time.ZonedDateTime
 import java.net.URI
 import java.net.URL
 

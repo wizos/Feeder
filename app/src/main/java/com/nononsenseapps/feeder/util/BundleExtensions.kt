@@ -4,7 +4,7 @@ import android.os.Bundle
 import com.nononsenseapps.feeder.db.room.FeedItemWithFeed
 import com.nononsenseapps.feeder.db.room.ID_UNSET
 import com.nononsenseapps.feeder.ui.ARG_FEED_URL
-import org.threeten.bp.ZonedDateTime
+import java.time.ZonedDateTime
 
 inline fun bundle(init: Bundle.() -> Unit): Bundle {
     val bundle = Bundle()

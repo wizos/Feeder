@@ -98,6 +98,7 @@ android {
   }
 
   compileOptions {
+    coreLibraryDesugaringEnabled true
     sourceCompatibility JavaVersion.VERSION_1_8
     targetCompatibility JavaVersion.VERSION_1_8
   }
@@ -113,6 +114,7 @@ play {
 }
 
 dependencies {
+  coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:1.0.5"
   kapt "androidx.room:room-compiler:$room_version"
 
   // Needed pre SDK21
@@ -140,8 +142,6 @@ dependencies {
 
   // To support SDK18
   implementation "com.nononsenseapps:filepicker:4.1.0"
-  // Better times
-  implementation "com.jakewharton.threetenabp:threetenabp:$threetenabp_version"
   // HTML parsing
   implementation "org.jsoup:jsoup:$jsoup_version"
   implementation "org.ccil.cowan.tagsoup:tagsoup:1.2.1"
@@ -155,7 +155,6 @@ dependencies {
   // Image loading
   implementation "com.github.bumptech.glide:glide:3.7.0"
   implementation "com.github.bumptech.glide:okhttp3-integration:1.4.0@aar"
-
 
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
   // Coroutines
@@ -173,9 +172,6 @@ dependencies {
   testImplementation "org.mockito:mockito-core:$mockito_version"
   testImplementation "io.mockk:mockk:$mockk_version"
   testImplementation "com.squareup.okhttp3:mockwebserver:$okhttp_version"
-
-  // Needed for unit testing timezone stuff
-  testImplementation "org.threeten:threetenbp:$threetentest_version"
 
   androidTestImplementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
   androidTestImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
