@@ -36,7 +36,6 @@ suspend fun syncFeeds(context: Context,
                       feedId: Long = ID_UNSET,
                       feedTag: String = "",
                       forceNetwork: Boolean = false,
-                      parallel: Boolean = false,
                       minFeedAgeMinutes: Int = 15): Boolean {
     val kodein: Kodein by closestKodein(context)
     val prefs: Prefs by kodein.instance()
@@ -48,7 +47,6 @@ suspend fun syncFeeds(context: Context,
             feedTag = feedTag,
             maxFeedItemCount = prefs.maximumCountPerFeed,
             forceNetwork = forceNetwork,
-            parallel = parallel,
             minFeedAgeMinutes = minFeedAgeMinutes
     )
 }
@@ -61,7 +59,6 @@ internal suspend fun syncFeeds(db: AppDatabase,
                                feedTag: String = "",
                                maxFeedItemCount: Int = 100,
                                forceNetwork: Boolean = false,
-                               parallel: Boolean = false,
                                minFeedAgeMinutes: Int = 15): Boolean {
     var result = false
     // Let all new items share download time
@@ -79,22 +76,26 @@ internal suspend fun syncFeeds(db: AppDatabase,
 
                 Log.d("CoroutineSync", "Syncing ${feedsToFetch.size} feeds")
 
-                val coroutineContext = when (parallel) {
-                    true -> Dispatchers.Default
-                    false -> this.coroutineContext
-                } + CoroutineExceptionHandler { _, throwable ->
+                val coroutineContext = this.coroutineContext + CoroutineExceptionHandler { _, throwable ->
                     Log.e("CoroutineSync", "Error during sync: ${throwable.message}")
                 }
 
                 feedsToFetch.forEach {
                     launch(coroutineContext) {
-                        syncFeed(it,
-                                db = db,
-                                filesDir = filesDir,
-                                feedParser = feedParser,
-                                maxFeedItemCount = maxFeedItemCount,
-                                forceNetwork = forceNetwork,
-                                downloadTime = downloadTime)
+                        try {
+                            syncFeed(it,
+                                    db = db,
+                                    filesDir = filesDir,
+                                    feedParser = feedParser,
+                                    maxFeedItemCount = maxFeedItemCount,
+                                    forceNetwork = forceNetwork,
+                                    downloadTime = downloadTime)
+                        } catch (original: Exception) {
+                            throw FeedSyncException(
+                                    "Could not sync ${it.customTitle}",
+                                    original
+                            )
+                        }
                     }
                 }
 

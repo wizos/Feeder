@@ -272,8 +272,7 @@ class FeedActivity : KodeinAwareActivity() {
             if (isOkToSyncAutomatically(applicationContext)) {
                 requestFeedSync(kodein = kodein,
                         ignoreConnectivitySettings = false,
-                        forceNetwork = false,
-                        parallell = true)
+                        forceNetwork = false)
             }
         }
     }

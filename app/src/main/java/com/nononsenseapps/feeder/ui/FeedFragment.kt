@@ -199,8 +199,7 @@ class FeedFragment : KodeinAwareFragment() {
                     feedId = id,
                     feedTag = feedTag ?: "",
                     ignoreConnectivitySettings = true,
-                    forceNetwork = true,
-                    parallell = true
+                    forceNetwork = true
             )
         }
 
@@ -456,8 +455,7 @@ class FeedFragment : KodeinAwareFragment() {
                 requestFeedSync(
                         kodein = kodein,
                         ignoreConnectivitySettings = true,
-                        forceNetwork = true,
-                        parallell = true
+                        forceNetwork = true
                 )
                 true
             }

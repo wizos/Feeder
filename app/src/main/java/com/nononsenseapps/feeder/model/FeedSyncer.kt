@@ -12,11 +12,14 @@ import com.nononsenseapps.feeder.util.currentlyConnected
 import com.nononsenseapps.feeder.util.currentlyUnmetered
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
+import kotlinx.coroutines.withContext
 import org.kodein.di.Kodein
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.closestKodein
 import org.kodein.di.generic.instance
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 const val ARG_FORCE_NETWORK = "force_network"
@@ -43,9 +46,7 @@ class FeedSyncer(val context: Context, workerParams: WorkerParameters) : Corouti
     private val currentlySyncing: ConflatedBroadcastChannel<Boolean> by instance(tag = CURRENTLY_SYNCING_STATE)
 
     override suspend fun doWork(): Result {
-        val goParallel = inputData.getBoolean(PARALLEL_SYNC, false)
         val ignoreConnectivitySettings = inputData.getBoolean(IGNORE_CONNECTIVITY_SETTINGS, false)
-
 
         var success = false
 
@@ -59,14 +60,20 @@ class FeedSyncer(val context: Context, workerParams: WorkerParameters) : Corouti
             val forceNetwork = inputData.getBoolean(ARG_FORCE_NETWORK, false)
             val minFeedAgeMinutes = inputData.getInt(MIN_FEED_AGE_MINUTES, 15)
 
-            success = syncFeeds(
-                    context = applicationContext,
-                    feedId = feedId,
-                    feedTag = feedTag,
-                    forceNetwork = forceNetwork,
-                    parallel = goParallel,
-                    minFeedAgeMinutes = minFeedAgeMinutes
-            )
+            val singleThreaded = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
+
+            success = singleThreaded.use {
+                withContext(singleThreaded) {
+                    syncFeeds(
+                            context = applicationContext,
+                            feedId = feedId,
+                            feedTag = feedTag,
+                            forceNetwork = forceNetwork,
+                            minFeedAgeMinutes = minFeedAgeMinutes
+                    )
+                }
+            }
+
             // Send notifications for configured feeds
             notify(applicationContext)
         }
@@ -88,13 +95,11 @@ fun requestFeedSync(kodein: Kodein,
                     feedId: Long = ID_UNSET,
                     feedTag: String = "",
                     ignoreConnectivitySettings: Boolean = false,
-                    forceNetwork: Boolean = false,
-                    parallell: Boolean = false) {
+                    forceNetwork: Boolean = false) {
     val workRequest = OneTimeWorkRequestBuilder<FeedSyncer>()
 
     val data = workDataOf(ARG_FEED_ID to feedId,
             ARG_FEED_TAG to feedTag,
-            PARALLEL_SYNC to parallell,
             IGNORE_CONNECTIVITY_SETTINGS to ignoreConnectivitySettings,
             ARG_FORCE_NETWORK to forceNetwork)
 
