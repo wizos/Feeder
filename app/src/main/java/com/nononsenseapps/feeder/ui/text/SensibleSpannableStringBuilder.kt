@@ -11,4 +11,7 @@ open class SensibleSpannableStringBuilder(text: CharSequence = "",
 
     inline fun <reified T> getAllSpansWithType(): List<T> =
             getAllSpans().filterIsInstance(T::class.java)
+
+    inline fun <reified T> getLastOrNull(): T? =
+            getAllSpansWithType<T>().lastOrNull()
 }
