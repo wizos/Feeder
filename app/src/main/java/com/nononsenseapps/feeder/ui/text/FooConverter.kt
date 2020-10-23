@@ -35,7 +35,7 @@ class FooConverter(
     private val lastElement: DisplayElement
         get() = displayElements.last()
 
-    fun convert() {
+    fun convert(): List<DisplayElement> {
         parser.contentHandler = this
         try {
             parser.parse(InputSource(source))
@@ -47,8 +47,7 @@ class FooConverter(
             throw RuntimeException(e)
         }
 
-        TODO("Return something")
-//        return spannableStringBuilder
+        return displayElements
     }
 
     override fun setDocumentLocator(locator: Locator?) {
@@ -61,7 +60,7 @@ class FooConverter(
     }
 
     override fun endDocument() {
-        TODO("Handle end?")
+        displayElements.lastOrNull()?.close()
     }
 
     override fun startPrefixMapping(prefix: String?, uri: String?) {
@@ -112,6 +111,16 @@ sealed class DisplayElement {
      * Characters to add to the buffer if the element handles text
      */
     abstract fun characters(chars: CharArray, start: Int, length: Int)
+
+    /**
+     * Called in the rare case that an open tag is left when document is closed
+     */
+    open fun close() {}
+
+    /**
+     * Returns true if there is visible content - false otherwise
+     */
+    abstract val isVisible: Boolean
 }
 
 class BlackholeElement(
@@ -143,6 +152,8 @@ class BlackholeElement(
     override fun characters(chars: CharArray, start: Int, length: Int) {
         // Black hole
     }
+
+    override val isVisible: Boolean = false
 
 }
 
@@ -187,13 +198,15 @@ data class ImageElement(
     override fun characters(chars: CharArray, start: Int, length: Int) {
         // Black hole
     }
+
+    override val isVisible: Boolean = true
 }
 
 
 open class ParagraphTextElement(
         initialPlaceholders: List<Placeholder> = emptyList()
 ) : DisplayElement() {
-    private val spannableStringBuilder = SensibleSpannableStringBuilder()
+    private var spannableStringBuilder = SensibleSpannableStringBuilder()
 
     private val nextIndex: Int
         get() = spannableStringBuilder.length
@@ -211,8 +224,23 @@ open class ParagraphTextElement(
         addAll(initialPlaceholders)
     }
 
+    override fun close() {
+        while (placeholders.isNotEmpty()) {
+            end(placeholders.last().javaClass)
+        }
+    }
+
+    override val isVisible: Boolean
+        get() = spannableStringBuilder.isNotBlank()
+
     private fun closeTagsAndReturnFreshCopy(): ParagraphTextElement {
-        TODO()
+        val initialPlaceholders = mutableListOf<Placeholder>().also { list ->
+            list.addAll(placeholders.map { it.copyWithZeroStartIndex() })
+        }
+
+        this.close()
+
+        return ParagraphTextElement(initialPlaceholders = initialPlaceholders)
     }
 
     override fun startTag(tag: String, attributes: Attributes): DisplayElement? {
@@ -298,7 +326,10 @@ open class ParagraphTextElement(
             "code" -> end<Code>()
         }
 
-        return null
+        return when(tag) {
+            "p", "div" -> closeTagsAndReturnFreshCopy()
+            else -> null
+        }
     }
 
     override fun characters(chars: CharArray, start: Int, length: Int) {
@@ -307,7 +338,7 @@ open class ParagraphTextElement(
             val prev = spannableStringBuilder.lastOrNull()
 
             when {
-                char.isWhitespace() && prev?.isWhitespace() != true -> {
+                char.isWhitespace() && prev?.isWhitespace() == false -> {
                     spannableStringBuilder.append(' ')
                 }
                 !char.isWhitespace() -> {
@@ -330,10 +361,12 @@ open class ParagraphTextElement(
         placeholders.add(placeholder)
     }
 
-    private inline fun <reified T : Placeholder> end() {
-        placeholders.filterIsInstance<T>()
+    private fun <T : Placeholder> end(klass: Class<T>) {
+        placeholders.filterIsInstance(klass)
                 .lastOrNull()
                 ?.let { placeholder ->
+                    placeholders.remove(placeholder)
+
                     if (placeholder.startIndex < nextIndex) {
                         for (realSpans in placeholder.actualSpans()) {
                             spannableStringBuilder.setSpan(
@@ -347,12 +380,18 @@ open class ParagraphTextElement(
                 }
     }
 
+    private inline fun <reified T : Placeholder> end() = end(T::class.java)
+
     override fun equals(other: Any?): Boolean {
         return this === other
     }
 
     override fun hashCode(): Int {
         return System.identityHashCode(this)
+    }
+
+    override fun toString(): String {
+        return "PARAGRAPH('${spannableStringBuilder.toString().take(15)}')"
     }
 }
 
@@ -397,38 +436,47 @@ class FormattedTextElement : ParagraphTextElement() {
 sealed class Placeholder {
     abstract fun actualSpans(): Iterable<ParcelableSpan>
     abstract val startIndex: Int
+    abstract fun copyWithZeroStartIndex(): Placeholder
 }
 
 data class Bold(override val startIndex: Int) : Placeholder() {
     override fun actualSpans(): Iterable<ParcelableSpan> = listOf(StyleSpan(Typeface.BOLD))
+    override fun copyWithZeroStartIndex() = copy(startIndex = 0)
 }
 
 data class Italic(override val startIndex: Int) : Placeholder() {
     override fun actualSpans(): Iterable<ParcelableSpan> = listOf(StyleSpan(Typeface.ITALIC))
+    override fun copyWithZeroStartIndex() = copy(startIndex = 0)
 }
 
 data class Underline(override val startIndex: Int) : Placeholder() {
     override fun actualSpans(): Iterable<ParcelableSpan> = listOf(UnderlineSpan())
+    override fun copyWithZeroStartIndex() = copy(startIndex = 0)
 }
 
 data class Big(override val startIndex: Int) : Placeholder() {
     override fun actualSpans(): Iterable<ParcelableSpan> = listOf(RelativeSizeSpan(1.25f))
+    override fun copyWithZeroStartIndex() = copy(startIndex = 0)
 }
 
 data class Small(override val startIndex: Int) : Placeholder() {
     override fun actualSpans(): Iterable<ParcelableSpan> = listOf(RelativeSizeSpan(0.8f))
+    override fun copyWithZeroStartIndex() = copy(startIndex = 0)
 }
 
 data class Monospace(override val startIndex: Int) : Placeholder() {
     override fun actualSpans(): Iterable<ParcelableSpan> = listOf(TypefaceSpan("monospace"))
+    override fun copyWithZeroStartIndex() = copy(startIndex = 0)
 }
 
 data class Super(override val startIndex: Int) : Placeholder() {
     override fun actualSpans(): Iterable<ParcelableSpan> = listOf(SuperscriptSpan())
+    override fun copyWithZeroStartIndex() = copy(startIndex = 0)
 }
 
 data class Sub(override val startIndex: Int) : Placeholder() {
     override fun actualSpans(): Iterable<ParcelableSpan> = listOf(SubscriptSpan())
+    override fun copyWithZeroStartIndex() = copy(startIndex = 0)
 }
 
 data class Code(val codeTextColor: Int, override val startIndex: Int) : Placeholder() {
@@ -437,6 +485,8 @@ data class Code(val codeTextColor: Int, override val startIndex: Int) : Placehol
             RelativeSizeSpan(0.8f),
             BackgroundColorSpan(codeTextColor)
     )
+
+    override fun copyWithZeroStartIndex() = copy(startIndex = 0)
 }
 
 data class Font(val color: String?, val face: String?, override val startIndex: Int) : Placeholder() {
@@ -466,6 +516,8 @@ data class Font(val color: String?, val face: String?, override val startIndex: 
             }
         }.asIterable()
     }
+
+    override fun copyWithZeroStartIndex() = copy(startIndex = 0)
 }
 
 data class Href(
@@ -490,4 +542,6 @@ data class Href(
             } else {
                 emptyList()
             }
+
+    override fun copyWithZeroStartIndex() = copy(startIndex = 0)
 }
