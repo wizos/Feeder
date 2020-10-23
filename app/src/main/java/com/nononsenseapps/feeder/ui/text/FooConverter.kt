@@ -162,13 +162,20 @@ data class ImageElement(
         val width: Int?,
         val height: Int?,
         val alt: String?,
+        val link: String?,
         val nextTextElement: ParagraphTextElement
 ) : DisplayElement() {
-    constructor(attributes: Attributes, nextTextElement: ParagraphTextElement) : this(
+    constructor(
+            attributes: Attributes,
+            nextTextElement:
+            ParagraphTextElement,
+            link: String?
+    ) : this(
             src = attributes.getValue("", "src"),
             width = attributes.getValue("", "width")?.toIntOrNull(),
             height = attributes.getValue("", "height")?.toIntOrNull(),
             alt = attributes.getValue("", "alt"),
+            link = link,
             nextTextElement = nextTextElement
     )
 
@@ -288,7 +295,11 @@ open class ParagraphTextElement(
         }
 
         return when (tag) {
-            "img" -> ImageElement(attributes, closeTagsAndReturnFreshCopy())
+            "img" -> ImageElement(
+                    attributes,
+                    link = placeholders.filterIsInstance<Href>().lastOrNull()?.absUrl,
+                    nextTextElement = closeTagsAndReturnFreshCopy()
+            )
             "p", "div" -> startParagraph()
             "blockquote" -> TODO("blockquote - type of formatted")
             "h1", "h2", "h3", "h4", "h5", "h6" -> TODO("header")
