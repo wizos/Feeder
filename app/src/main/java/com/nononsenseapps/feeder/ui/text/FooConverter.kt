@@ -199,14 +199,15 @@ data class ImageElement(
         // Black hole
     }
 
-    override val isVisible: Boolean = true
+    override val isVisible: Boolean = src?.isNotBlank() == true
 }
 
 
 open class ParagraphTextElement(
-        initialPlaceholders: List<Placeholder> = emptyList()
+        initialPlaceholders: List<Placeholder> = emptyList(),
+        open val nextTextElement: ParagraphTextElement? = null
 ) : DisplayElement() {
-    private var spannableStringBuilder = SensibleSpannableStringBuilder()
+    protected var spannableStringBuilder = SensibleSpannableStringBuilder()
 
     private val nextIndex: Int
         get() = spannableStringBuilder.length
@@ -220,7 +221,7 @@ open class ParagraphTextElement(
     private val siteUrl: URL
         get() = TODO()
 
-    private val placeholders = mutableListOf<Placeholder>().apply {
+    protected val placeholders = mutableListOf<Placeholder>().apply {
         addAll(initialPlaceholders)
     }
 
@@ -240,74 +241,70 @@ open class ParagraphTextElement(
 
         this.close()
 
-        return ParagraphTextElement(initialPlaceholders = initialPlaceholders)
+        return ParagraphTextElement(
+                initialPlaceholders = initialPlaceholders,
+                nextTextElement = nextTextElement
+        )
+    }
+
+    protected open fun startParagraph(): ParagraphTextElement? {
+        return closeTagsAndReturnFreshCopy()
+    }
+
+    private fun endParagraph(): ParagraphTextElement? {
+        return when {
+            nextTextElement != null -> {
+                close()
+                nextTextElement
+            }
+            else -> closeTagsAndReturnFreshCopy()
+        }
+    }
+
+    protected open fun startFormattedParagraph(): FormattedTextElement? {
+        val initialPlaceholders = mutableListOf<Placeholder>().also { list ->
+            list.addAll(placeholders.map { it.copyWithZeroStartIndex() })
+        }
+
+        return FormattedTextElement(
+                nextTextElement = closeTagsAndReturnFreshCopy(),
+                initialPlaceholders = initialPlaceholders
+        )
     }
 
     override fun startTag(tag: String, attributes: Attributes): DisplayElement? {
-        val result = when (tag) {
+        when (tag) {
+            "strong", "b" -> start(Bold(nextIndex))
+            "em", "cite", "dfn", "i" -> start(Italic(nextIndex))
+            "big" -> start(Big(nextIndex))
+            "small" -> start(Small(nextIndex))
+            "font" -> start(Font(attributes, nextIndex))
+            "tt" -> start(Monospace(nextIndex))
+            "a" -> start(Href(attributes, siteUrl, urlClickListener, nextIndex))
+            "u" -> start(Underline(nextIndex))
+            "sup" -> start(Super(nextIndex))
+            "sub" -> start(Sub(nextIndex))
+            "code" -> start(Code(codeTextBgColor, nextIndex))
+        }
+
+        return when (tag) {
             "img" -> ImageElement(attributes, closeTagsAndReturnFreshCopy())
-            "p", "div" -> closeTagsAndReturnFreshCopy()
+            "p", "div" -> startParagraph()
             "blockquote" -> TODO("blockquote - type of formatted")
             "h1", "h2", "h3", "h4", "h5", "h6" -> TODO("header")
-            "strong", "b" -> {
-                start(Bold(nextIndex))
-                null
-            }
-            "em", "cite", "dfn", "i" -> {
-                start(Italic(nextIndex))
-                null
-            }
-            "big" -> {
-                start(Big(nextIndex))
-                null
-            }
-            "small" -> {
-                start(Small(nextIndex))
-                null
-            }
-            "font" -> {
-                start(Font(attributes, nextIndex))
-                null
-            }
-            "tt" -> {
-                start(Monospace(nextIndex))
-                null
-            }
-            "a" -> {
-                start(Href(attributes, siteUrl, urlClickListener, nextIndex))
-                null
-            }
-            "u" -> {
-                start(Underline(nextIndex))
-                null
-            }
-            "sup" -> {
-                start(Super(nextIndex))
-                null
-            }
-            "sub" -> {
-                start(Sub(nextIndex))
-                null
-            }
-            "code" -> {
-                start(Code(codeTextBgColor, nextIndex))
-                null
-            }
             "ul" -> TODO("unorderd list")
             "ol" -> TODO("ordered list")
-            "pre" -> TODO("pre formatted")
+            "pre" -> startFormattedParagraph()
             "iframe" -> TODO("iframe")
             "table" -> TODO("table")
             "style", "script" -> BlackholeElement(nextTextElement = closeTagsAndReturnFreshCopy())
             "li" -> TODO("probably ignore list items here then?")
             "tr", "td", "th" -> TODO("probably ignore table items here then?")
             else -> {
-                // Ignore the tag and just keep going
+                // keep going
                 null
             }
         }
-
-        return result
     }
 
     override fun endTag(tag: String): DisplayElement? {
@@ -326,8 +323,8 @@ open class ParagraphTextElement(
             "code" -> end<Code>()
         }
 
-        return when(tag) {
-            "p", "div" -> closeTagsAndReturnFreshCopy()
+        return when (tag) {
+            "p", "div" -> endParagraph()
             else -> null
         }
     }
@@ -395,26 +392,51 @@ open class ParagraphTextElement(
     }
 }
 
-class FormattedTextElement : ParagraphTextElement() {
-    private val spannableStringBuilder = SensibleSpannableStringBuilder()
+class FormattedTextElement(
+        override val nextTextElement: ParagraphTextElement,
+        initialPlaceholders: List<Placeholder>
+) : ParagraphTextElement(initialPlaceholders, nextTextElement) {
 
-    private fun closeTagsAndReturnFreshCopy(): ParagraphTextElement {
-        TODO()
-    }
-
-    override fun startTag(tag: String, attributes: Attributes): DisplayElement? {
-        val result = when (tag) {
-            "img" -> ImageElement(attributes, closeTagsAndReturnFreshCopy())
-            else -> null
+    override fun startParagraph(): ParagraphTextElement? {
+        val initialPlaceholders = mutableListOf<Placeholder>().also { list ->
+            list.addAll(placeholders.map { it.copyWithZeroStartIndex() })
         }
 
-        TODO()
+        this.close()
 
-        return result
+        return ParagraphTextElement(
+                initialPlaceholders = initialPlaceholders,
+                nextTextElement = FormattedTextElement(
+                        initialPlaceholders = initialPlaceholders,
+                        nextTextElement = nextTextElement
+                )
+        )
+    }
+
+    override fun startFormattedParagraph(): FormattedTextElement? {
+        val initialPlaceholders = mutableListOf<Placeholder>().also { list ->
+            list.addAll(placeholders.map { it.copyWithZeroStartIndex() })
+        }
+
+        this.close()
+
+        return FormattedTextElement(
+                initialPlaceholders = initialPlaceholders,
+                nextTextElement = FormattedTextElement(
+                        initialPlaceholders = initialPlaceholders,
+                        nextTextElement = nextTextElement
+                )
+        )
     }
 
     override fun endTag(tag: String): DisplayElement? {
-        TODO("Not yet implemented")
+        return when (tag) {
+            "pre" -> {
+                close()
+                nextTextElement
+            }
+            else -> super.endTag(tag)
+        }
     }
 
     override fun characters(chars: CharArray, start: Int, length: Int) {
@@ -430,6 +452,10 @@ class FormattedTextElement : ParagraphTextElement() {
 
     override fun hashCode(): Int {
         return System.identityHashCode(this)
+    }
+
+    override fun toString(): String {
+        return "FORMATTED('${spannableStringBuilder.toString().take(15)}')"
     }
 }
 

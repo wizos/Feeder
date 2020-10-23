@@ -22,12 +22,11 @@ class FooConverterTest {
     @Test
     fun converterStructureIsSound() {
         val content = """
-            <html><head></head><body>
             <div/>
             <div>
             hello
+            <img>
             </div>
-            </body></html>
         """.trimIndent()
 
         val converter = FooConverter(
@@ -39,8 +38,50 @@ class FooConverterTest {
 
         val rawResult = converter.convert()
 
-        assertEquals(5, rawResult.size)
+        assertEquals(
+                7,
+                rawResult.size,
+                "$rawResult"
+        )
 
-        assertEquals(1, rawResult.filter { it.isVisible }.size)
+        val filtered = rawResult.filter { it.isVisible }
+
+        assertEquals(
+                1,
+                filtered.size,
+                "$filtered"
+        )
+    }
+
+    @Test
+    fun converterStructureIsSoundFormatted() {
+        val content = """
+            <pre></pre>
+            <pre> </pre>
+            <pre> hello </pre>
+        """.trimIndent()
+
+        val converter = FooConverter(
+                content.reader(),
+                siteUrl,
+                parser,
+                kodein
+        )
+
+        val rawResult = converter.convert()
+
+        assertEquals(
+                7,
+                rawResult.size,
+                "$rawResult"
+        )
+
+        val filtered = rawResult.filter { it.isVisible }
+
+        assertEquals(
+                1,
+                filtered.size,
+                "$filtered"
+        )
     }
 }
