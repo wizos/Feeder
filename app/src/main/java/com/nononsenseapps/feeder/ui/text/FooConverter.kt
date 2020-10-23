@@ -241,7 +241,7 @@ open class ParagraphTextElement(
     override val isVisible: Boolean
         get() = spannableStringBuilder.isNotBlank()
 
-    private fun closeTagsAndReturnFreshCopy(): ParagraphTextElement {
+    private fun closeTagsAndReturnEmptyClone(): ParagraphTextElement {
         val initialPlaceholders = mutableListOf<Placeholder>().also { list ->
             list.addAll(placeholders.map { it.copyWithZeroStartIndex() })
         }
@@ -254,18 +254,27 @@ open class ParagraphTextElement(
         )
     }
 
-    protected open fun startParagraph(): ParagraphTextElement? {
-        return closeTagsAndReturnFreshCopy()
-    }
-
     private fun endParagraph(): ParagraphTextElement? {
         return when {
             nextTextElement != null -> {
                 close()
                 nextTextElement
             }
-            else -> closeTagsAndReturnFreshCopy()
+            else -> closeTagsAndReturnEmptyClone()
         }
+    }
+
+    protected open fun startParagraph(): ParagraphTextElement? {
+        val initialPlaceholders = mutableListOf<Placeholder>().also { list ->
+            list.addAll(placeholders.map { it.copyWithZeroStartIndex() })
+        }
+
+        val myClone = closeTagsAndReturnEmptyClone()
+
+        return ParagraphTextElement(
+                initialPlaceholders = initialPlaceholders,
+                nextTextElement = myClone
+        )
     }
 
     protected open fun startFormattedParagraph(): FormattedTextElement? {
@@ -273,9 +282,11 @@ open class ParagraphTextElement(
             list.addAll(placeholders.map { it.copyWithZeroStartIndex() })
         }
 
+        val myClone = closeTagsAndReturnEmptyClone()
+
         return FormattedTextElement(
-                nextTextElement = closeTagsAndReturnFreshCopy(),
-                initialPlaceholders = initialPlaceholders
+                initialPlaceholders = initialPlaceholders,
+                nextTextElement = myClone
         )
     }
 
@@ -298,7 +309,7 @@ open class ParagraphTextElement(
             "img" -> ImageElement(
                     attributes,
                     link = placeholders.filterIsInstance<Href>().lastOrNull()?.absUrl,
-                    nextTextElement = closeTagsAndReturnFreshCopy()
+                    nextTextElement = closeTagsAndReturnEmptyClone()
             )
             "p", "div" -> startParagraph()
             "blockquote" -> TODO("blockquote - indented paragraph with a possible 'cite' source URL in attributes")
@@ -308,7 +319,7 @@ open class ParagraphTextElement(
             "pre" -> startFormattedParagraph()
             "iframe" -> TODO("iframe")
             "table" -> TODO("table")
-            "style", "script" -> BlackholeElement(nextTextElement = closeTagsAndReturnFreshCopy())
+            "style", "script" -> BlackholeElement(nextTextElement = closeTagsAndReturnEmptyClone())
             "li" -> TODO("probably ignore list items here then?")
             "tr", "td", "th" -> TODO("probably ignore table items here then?")
             else -> {
