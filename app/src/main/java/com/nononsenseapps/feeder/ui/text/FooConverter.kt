@@ -301,7 +301,7 @@ open class ParagraphTextElement(
                     nextTextElement = closeTagsAndReturnFreshCopy()
             )
             "p", "div" -> startParagraph()
-            "blockquote" -> TODO("blockquote - type of formatted")
+            "blockquote" -> TODO("blockquote - indented paragraph with a possible 'cite' source URL in attributes")
             "h1", "h2", "h3", "h4", "h5", "h6" -> TODO("header")
             "ul" -> TODO("unorderd list")
             "ol" -> TODO("ordered list")
