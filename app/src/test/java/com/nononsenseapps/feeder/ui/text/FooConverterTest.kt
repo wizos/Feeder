@@ -4,6 +4,7 @@ import org.ccil.cowan.tagsoup.Parser
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class FooConverterTest {
@@ -115,5 +116,49 @@ class FooConverterTest {
         assertEquals(listOf("tesla", "99"), table.getRows().last())
 
         assertTrue { table.isVisible }
+    }
+
+    @Test
+    fun blockquoteIsNotVisible() {
+        val content = """
+            <blockquote>
+            </blockquote>
+        """.trimIndent()
+
+        val converter = FooConverter(
+                content.reader(),
+                parser
+        )
+
+        val quote = converter.convert().filterIsInstance(BlockQuoteElement::class.java).single()
+
+        assertFalse{
+            quote.isVisible
+        }
+
+        assertNull(quote.citeRelativeUrl)
+    }
+
+    @Test
+    fun blockquoteWorks() {
+        val content = """
+            <blockquote cite="google.com">
+            Hi, my name  is Cory,   Cory Carson.
+            </blockquote>
+        """.trimIndent()
+
+        val converter = FooConverter(
+                content.reader(),
+                parser
+        )
+
+        val quote = converter.convert().filterIsInstance(BlockQuoteElement::class.java).single()
+
+        assertTrue{
+            quote.isVisible
+        }
+
+        assertEquals("google.com", quote.citeRelativeUrl)
+        assertEquals("Hi, my name is Cory, Cory Carson.", quote.getText().trim())
     }
 }

@@ -288,7 +288,10 @@ open class ParagraphTextElement(
                     nextTextElement = closeTagsAndReturnEmptyClone()
             )
             "p", "div" -> startParagraph()
-            "blockquote" -> TODO("blockquote - indented paragraph with a possible 'cite' source URL in attributes")
+            "blockquote" -> BlockQuoteElement(
+                    attributes,
+                    nextTextElement = closeTagsAndReturnEmptyClone()
+            )
             "h1", "h2", "h3", "h4", "h5", "h6" -> TODO("header")
             "ul" -> TODO("unorderd list")
             "ol" -> TODO("ordered list")
@@ -535,6 +538,55 @@ class TableElement(
     override fun hashCode(): Int {
         return System.identityHashCode(this)
     }
+
+}
+
+class BlockQuoteElement(
+        val citeRelativeUrl: String?,
+        val nextTextElement: ParagraphTextElement
+) : DisplayElement() {
+    private val stringBuilder = StringBuilder()
+
+    constructor(
+            attributes: Attributes,
+            nextTextElement: ParagraphTextElement
+    ) : this(
+            attributes.getValue("", "cite"),
+            nextTextElement
+    )
+
+    override fun startTag(tag: String, attributes: Attributes): DisplayElement? {
+        return null
+    }
+
+    override fun endTag(tag: String): DisplayElement? {
+        return if (tag == "blockquote") {
+            nextTextElement
+        } else {
+            null
+        }
+    }
+
+    override fun characters(chars: CharArray, start: Int, length: Int) {
+        for (index in start until (start + length)) {
+            val char = chars[index]
+            val prev = stringBuilder.lastOrNull()
+
+            when {
+                char.isWhitespace() && prev?.isWhitespace() == false -> {
+                    stringBuilder.append(' ')
+                }
+                !char.isWhitespace() -> {
+                    stringBuilder.append(char)
+                }
+            }
+        }
+    }
+
+    override val isVisible: Boolean
+        get() = stringBuilder.isNotBlank()
+
+    fun getText(): String = stringBuilder.toString()
 
 }
 
