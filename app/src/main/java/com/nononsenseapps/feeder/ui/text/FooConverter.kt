@@ -294,10 +294,11 @@ open class ParagraphTextElement(
             "ol" -> TODO("ordered list")
             "pre" -> startFormattedParagraph()
             "iframe" -> TODO("iframe")
-            "table" -> TODO("table")
+            "table" -> TableElement(
+                    nextTextElement = closeTagsAndReturnEmptyClone()
+            )
             "style", "script" -> BlackholeElement(nextTextElement = closeTagsAndReturnEmptyClone())
             "li" -> TODO("probably ignore list items here then?")
-            "tr", "td", "th" -> TODO("probably ignore table items here then?")
             else -> {
                 // keep going
                 null
@@ -449,6 +450,95 @@ class FormattedTextElement(
         return "FORMATTED('${stringBuilder.toString().take(15)}')"
     }
 }
+
+class TableElement(
+        val nextTextElement: ParagraphTextElement
+) : DisplayElement() {
+    private val rows: MutableList<MutableList<StringBuilder>> = mutableListOf()
+    private var currentRow: MutableList<StringBuilder>? = null
+    private var currentColumn: StringBuilder? = null
+
+    fun getRows(): List<List<String>> =
+            rows.map { row -> row.map { col -> col.toString() } }
+
+    override fun startTag(tag: String, attributes: Attributes): DisplayElement? {
+        when (tag) {
+            "tr" -> {
+                val row = mutableListOf<StringBuilder>()
+                rows.add(row)
+                currentRow = row
+            }
+            "td", "th" -> {
+                currentRow?.let { row ->
+                    val col = StringBuilder()
+                    row.add(col)
+                    currentColumn = col
+                }
+            }
+        }
+        return null
+    }
+
+    override fun endTag(tag: String): DisplayElement? {
+        when (tag) {
+            "tr" -> {
+                currentRow = null
+                currentColumn = null
+            }
+            "td", "th" -> currentColumn = null
+        }
+
+        return if (tag == "table") {
+            nextTextElement
+        } else {
+            null
+        }
+    }
+
+    override fun characters(chars: CharArray, start: Int, length: Int) {
+        if (currentColumn == null) {
+            return
+        }
+
+        for (index in start until (start + length)) {
+            val char = chars[index]
+            val prev = currentColumn?.lastOrNull()
+
+            when {
+                char.isWhitespace() && prev?.isWhitespace() == false -> {
+                    currentColumn?.append(' ')
+                }
+                !char.isWhitespace() -> {
+                    currentColumn?.append(char)
+                }
+            }
+        }
+    }
+
+    override val isVisible: Boolean
+        get() {
+            for (row in rows) {
+                for (col in row) {
+                    if (col.isNotBlank()) {
+                        return true
+                    }
+                }
+            }
+
+            return false
+        }
+
+    override fun equals(other: Any?): Boolean {
+        return this === other
+    }
+
+    override fun hashCode(): Int {
+        return System.identityHashCode(this)
+    }
+
+}
+
+////////////// TODO move below ///////////////////////////
 
 sealed class Placeholder {
     abstract val startIndex: Int

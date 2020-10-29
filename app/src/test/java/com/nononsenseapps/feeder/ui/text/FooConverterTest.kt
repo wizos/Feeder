@@ -3,6 +3,8 @@ package com.nononsenseapps.feeder.ui.text
 import org.ccil.cowan.tagsoup.Parser
 import org.junit.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class FooConverterTest {
     private val parser = Parser().also {
@@ -69,5 +71,49 @@ class FooConverterTest {
                 filtered.size,
                 "$filtered"
         )
+    }
+
+    @Test
+    fun tableElementNotVisible() {
+        val content = """
+            <table>
+              <tr><th> </th><th> </th></tr>
+              <tr><td> </td><td> </td></tr>
+              <tr><td> </td><td> </td></tr>
+            </table>
+        """.trimIndent()
+
+        val converter = FooConverter(
+                content.reader(),
+                parser
+        )
+
+        val table = converter.convert().filterIsInstance(TableElement::class.java).single()
+
+        assertFalse { table.isVisible }
+    }
+
+    @Test
+    fun tableElementWorks() {
+        val content = """
+            <table>
+              <tr><th>car</th><th>price</th></tr>
+              <tr><td>volvo</td><td>100</td></tr>
+              <tr><td>tesla</td><td>99</td></tr>
+            </table>
+        """.trimIndent()
+
+        val converter = FooConverter(
+                content.reader(),
+                parser
+        )
+
+        val table = converter.convert().filterIsInstance(TableElement::class.java).single()
+
+        assertEquals(listOf("car", "price"), table.getRows().first())
+        assertEquals(listOf("volvo", "100"), table.getRows()[1])
+        assertEquals(listOf("tesla", "99"), table.getRows().last())
+
+        assertTrue { table.isVisible }
     }
 }
