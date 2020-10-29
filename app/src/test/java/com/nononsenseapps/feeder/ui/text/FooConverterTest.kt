@@ -295,4 +295,57 @@ class FooConverterTest {
         assertEquals("one", list.getRows().first())
         assertEquals("two", list.getRows().last())
     }
+
+    @Test
+    fun iframeWithNoContentIgnored() {
+        val content = """
+            <iframe/>
+        """.trimIndent()
+
+        val converter = FooConverter(
+                content.reader(),
+                parser
+        )
+
+        val list = converter.convert()
+
+        assertEquals(1, list.size)
+        assertTrue { list.first() is ParagraphTextElement }
+    }
+
+    @Test
+    fun iframeWithNoVideoIsIgnored() {
+        val content = """
+            <iframe src="google.com"/>
+        """.trimIndent()
+
+        val converter = FooConverter(
+                content.reader(),
+                parser
+        )
+
+        val list = converter.convert()
+
+        assertEquals(1, list.size)
+        assertTrue { list.first() is ParagraphTextElement }
+    }
+
+    @Test
+    fun iframeWithVideoWorks() {
+        val content = """
+            <iframe src="http://www.youtube.com/embed/cjxnVO9RpaQ/theoretical_crap"/>
+        """.trimIndent()
+
+        val converter = FooConverter(
+                content.reader(),
+                parser
+        )
+
+        val videoElement = converter.convert().filterIsInstance(VideoElement::class.java).single()
+
+        assertEquals(
+                "http://www.youtube.com/embed/cjxnVO9RpaQ/theoretical_crap",
+                videoElement.video.src
+        )
+    }
 }

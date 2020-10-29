@@ -266,6 +266,11 @@ open class ParagraphTextElement(
         )
     }
 
+    private fun startIframe(attributes: Attributes): DisplayElement? {
+        val video: Video = getVideo(attributes.getValue("", "src")) ?: return null
+        return VideoElement(video, closeTagsAndReturnEmptyClone())
+    }
+
     override fun startTag(tag: String, attributes: Attributes): DisplayElement? {
         when (tag) {
             "strong", "b" -> start(Bold(nextIndex))
@@ -296,12 +301,11 @@ open class ParagraphTextElement(
             "ul" -> ListElement(false, closeTagsAndReturnEmptyClone())
             "ol" -> ListElement(true, closeTagsAndReturnEmptyClone())
             "pre" -> startFormattedParagraph()
-            "iframe" -> TODO("iframe")
+            "iframe" -> startIframe(attributes)
             "table" -> TableElement(
                     nextTextElement = closeTagsAndReturnEmptyClone()
             )
             "style", "script" -> BlackholeElement(nextTextElement = closeTagsAndReturnEmptyClone())
-            "li" -> TODO("probably ignore list items here then?")
             else -> {
                 // keep going
                 null
@@ -714,6 +718,28 @@ class HeaderElement(
         get() = stringBuilder.isNotBlank()
 
     fun getText(): String = stringBuilder.toString()
+}
+
+class VideoElement(
+        val video: Video,
+        val nextTextElement: ParagraphTextElement
+) : DisplayElement() {
+    override fun startTag(tag: String, attributes: Attributes): DisplayElement? {
+        return null
+    }
+
+    override fun endTag(tag: String): DisplayElement? {
+        return if (tag == "iframe") {
+            nextTextElement
+        } else {
+            null
+        }
+    }
+
+    override fun characters(chars: CharArray, start: Int, length: Int) {
+    }
+
+    override val isVisible = true
 }
 
 ////////////// TODO move below ///////////////////////////
