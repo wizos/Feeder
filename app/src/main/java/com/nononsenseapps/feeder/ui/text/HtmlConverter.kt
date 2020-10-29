@@ -13,6 +13,19 @@ import java.net.URL
 
 val schema: HTMLSchema by lazy { HTMLSchema() }
 
+fun toFooRecycler(
+        source: Reader
+): List<DisplayElement> {
+    val converter = FooConverter(
+            source,
+            Parser().also {
+                it.setProperty(Parser.schemaProperty, schema)
+            }
+    )
+
+    return converter.convert().filter { it.isVisible }
+}
+
 @FlowPreview
 fun toSpannedWithImages(
         kodein: Kodein,

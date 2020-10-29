@@ -10,8 +10,8 @@ import java.io.IOException
 import java.io.Reader
 
 class FooConverter(
-        private val source: Reader,
-        private val parser: Parser
+    private val source: Reader,
+    private val parser: Parser
 ) : ContentHandler {
     private val displayElements = mutableListOf<DisplayElement>()
     private val lastElement: DisplayElement
@@ -106,7 +106,7 @@ sealed class DisplayElement {
 }
 
 class BlackholeElement(
-        val nextTextElement: ParagraphTextElement
+    val nextTextElement: ParagraphTextElement
 ) : DisplayElement() {
     private var ignoreDepth = 0
 
@@ -140,25 +140,25 @@ class BlackholeElement(
 }
 
 data class ImageElement(
-        val src: String?,
-        val width: Int?,
-        val height: Int?,
-        val alt: String?,
-        val link: String?,
-        val nextTextElement: ParagraphTextElement
+    val src: String?,
+    val width: Int?,
+    val height: Int?,
+    val alt: String?,
+    val link: String?,
+    val nextTextElement: ParagraphTextElement
 ) : DisplayElement() {
     constructor(
-            attributes: Attributes,
-            nextTextElement:
-            ParagraphTextElement,
-            relativeLink: String?
+        attributes: Attributes,
+        nextTextElement:
+        ParagraphTextElement,
+        relativeLink: String?
     ) : this(
-            src = attributes.getValue("", "src"),
-            width = attributes.getValue("", "width")?.toIntOrNull(),
-            height = attributes.getValue("", "height")?.toIntOrNull(),
-            alt = attributes.getValue("", "alt"),
-            link = relativeLink,
-            nextTextElement = nextTextElement
+        src = attributes.getValue("", "src"),
+        width = attributes.getValue("", "width")?.toIntOrNull(),
+        height = attributes.getValue("", "height")?.toIntOrNull(),
+        alt = attributes.getValue("", "alt"),
+        link = relativeLink,
+        nextTextElement = nextTextElement
     )
 
     private var ignoreDepth = 0
@@ -193,8 +193,8 @@ data class ImageElement(
 
 
 open class ParagraphTextElement(
-        initialPlaceholders: List<Placeholder> = emptyList(),
-        open val nextTextElement: ParagraphTextElement? = null
+    initialPlaceholders: List<Placeholder> = emptyList(),
+    internal open val nextTextElement: ParagraphTextElement? = null
 ) : DisplayElement() {
     protected var stringBuilder = StringBuilder()
 
@@ -206,7 +206,8 @@ open class ParagraphTextElement(
         addAll(initialPlaceholders)
     }
 
-    protected val spans = mutableListOf<Placeholder>()
+    val spans = mutableListOf<Placeholder>()
+    fun getText(): String = stringBuilder.toString()
 
     override fun close() {
         while (placeholders.isNotEmpty()) {
@@ -225,8 +226,8 @@ open class ParagraphTextElement(
         this.close()
 
         return ParagraphTextElement(
-                initialPlaceholders = initialPlaceholders,
-                nextTextElement = nextTextElement
+            initialPlaceholders = initialPlaceholders,
+            nextTextElement = nextTextElement
         )
     }
 
@@ -248,8 +249,8 @@ open class ParagraphTextElement(
         val myClone = closeTagsAndReturnEmptyClone()
 
         return ParagraphTextElement(
-                initialPlaceholders = initialPlaceholders,
-                nextTextElement = myClone
+            initialPlaceholders = initialPlaceholders,
+            nextTextElement = myClone
         )
     }
 
@@ -261,8 +262,8 @@ open class ParagraphTextElement(
         val myClone = closeTagsAndReturnEmptyClone()
 
         return FormattedTextElement(
-                initialPlaceholders = initialPlaceholders,
-                nextTextElement = myClone
+            initialPlaceholders = initialPlaceholders,
+            nextTextElement = myClone
         )
     }
 
@@ -288,14 +289,14 @@ open class ParagraphTextElement(
 
         return when (tag) {
             "img" -> ImageElement(
-                    attributes,
-                    relativeLink = placeholders.filterIsInstance<Href>().lastOrNull()?.relativeUrl,
-                    nextTextElement = closeTagsAndReturnEmptyClone()
+                attributes,
+                relativeLink = placeholders.filterIsInstance<Href>().lastOrNull()?.relativeUrl,
+                nextTextElement = closeTagsAndReturnEmptyClone()
             )
             "p", "div" -> startParagraph()
             "blockquote" -> BlockQuoteElement(
-                    attributes,
-                    nextTextElement = closeTagsAndReturnEmptyClone()
+                attributes,
+                nextTextElement = closeTagsAndReturnEmptyClone()
             )
             "h1", "h2", "h3", "h4", "h5", "h6" -> HeaderElement(tag, closeTagsAndReturnEmptyClone())
             "ul" -> ListElement(false, closeTagsAndReturnEmptyClone())
@@ -303,7 +304,7 @@ open class ParagraphTextElement(
             "pre" -> startFormattedParagraph()
             "iframe" -> startIframe(attributes)
             "table" -> TableElement(
-                    nextTextElement = closeTagsAndReturnEmptyClone()
+                nextTextElement = closeTagsAndReturnEmptyClone()
             )
             "style", "script" -> BlackholeElement(nextTextElement = closeTagsAndReturnEmptyClone())
             else -> {
@@ -366,14 +367,14 @@ open class ParagraphTextElement(
 
     private fun <T : Placeholder> end(klass: Class<T>) {
         placeholders.filterIsInstance(klass)
-                .lastOrNull()
-                ?.let { placeholder ->
-                    placeholders.remove(placeholder)
+            .lastOrNull()
+            ?.let { placeholder ->
+                placeholders.remove(placeholder)
 
-                    if (placeholder.startIndex < nextIndex) {
-                        spans.add(placeholder.copyWithEndIndex(nextIndex))
-                    }
+                if (placeholder.startIndex < nextIndex) {
+                    spans.add(placeholder.copyWithEndIndex(nextIndex))
                 }
+            }
     }
 
     private inline fun <reified T : Placeholder> end() = end(T::class.java)
@@ -392,8 +393,8 @@ open class ParagraphTextElement(
 }
 
 class FormattedTextElement(
-        override val nextTextElement: ParagraphTextElement,
-        initialPlaceholders: List<Placeholder>
+    override val nextTextElement: ParagraphTextElement,
+    initialPlaceholders: List<Placeholder>
 ) : ParagraphTextElement(initialPlaceholders, nextTextElement) {
 
     override fun startParagraph(): ParagraphTextElement? {
@@ -404,11 +405,11 @@ class FormattedTextElement(
         this.close()
 
         return ParagraphTextElement(
+            initialPlaceholders = initialPlaceholders,
+            nextTextElement = FormattedTextElement(
                 initialPlaceholders = initialPlaceholders,
-                nextTextElement = FormattedTextElement(
-                        initialPlaceholders = initialPlaceholders,
-                        nextTextElement = nextTextElement
-                )
+                nextTextElement = nextTextElement
+            )
         )
     }
 
@@ -420,11 +421,11 @@ class FormattedTextElement(
         this.close()
 
         return FormattedTextElement(
+            initialPlaceholders = initialPlaceholders,
+            nextTextElement = FormattedTextElement(
                 initialPlaceholders = initialPlaceholders,
-                nextTextElement = FormattedTextElement(
-                        initialPlaceholders = initialPlaceholders,
-                        nextTextElement = nextTextElement
-                )
+                nextTextElement = nextTextElement
+            )
         )
     }
 
@@ -459,14 +460,14 @@ class FormattedTextElement(
 }
 
 class TableElement(
-        val nextTextElement: ParagraphTextElement
+    val nextTextElement: ParagraphTextElement
 ) : DisplayElement() {
     private val rows: MutableList<MutableList<StringBuilder>> = mutableListOf()
     private var currentRow: MutableList<StringBuilder>? = null
     private var currentColumn: StringBuilder? = null
 
     fun getRows(): List<List<String>> =
-            rows.map { row -> row.map { col -> col.toString() } }
+        rows.map { row -> row.map { col -> col.toString() } }
 
     override fun startTag(tag: String, attributes: Attributes): DisplayElement? {
         when (tag) {
@@ -545,14 +546,14 @@ class TableElement(
 }
 
 class ListElement(
-        val ordered: Boolean,
-        val nextTextElement: ParagraphTextElement
+    val ordered: Boolean,
+    val nextTextElement: ParagraphTextElement
 ) : DisplayElement() {
     private val items: MutableList<StringBuilder> = mutableListOf()
     private var currentItem: StringBuilder? = null
 
     fun getRows(): List<String> =
-            items.map { item -> item.toString() }
+        items.map { item -> item.toString() }
 
     override fun startTag(tag: String, attributes: Attributes): DisplayElement? {
         when (tag) {
@@ -618,17 +619,17 @@ class ListElement(
 }
 
 class BlockQuoteElement(
-        val citeRelativeUrl: String?,
-        val nextTextElement: ParagraphTextElement
+    val citeRelativeUrl: String?,
+    val nextTextElement: ParagraphTextElement
 ) : DisplayElement() {
     private val stringBuilder = StringBuilder()
 
     constructor(
-            attributes: Attributes,
-            nextTextElement: ParagraphTextElement
+        attributes: Attributes,
+        nextTextElement: ParagraphTextElement
     ) : this(
-            attributes.getValue("", "cite"),
-            nextTextElement
+        attributes.getValue("", "cite"),
+        nextTextElement
     )
 
     override fun startTag(tag: String, attributes: Attributes): DisplayElement? {
@@ -666,24 +667,24 @@ class BlockQuoteElement(
 }
 
 class HeaderElement(
-        val level: Int,
-        val nextTextElement: ParagraphTextElement
+    val level: Int,
+    val nextTextElement: ParagraphTextElement
 ) : DisplayElement() {
     private val stringBuilder = StringBuilder()
 
     constructor(
-            tagName: String,
-            nextTextElement: ParagraphTextElement
+        tagName: String,
+        nextTextElement: ParagraphTextElement
     ) : this(
-            when (tagName) {
-                "h1" -> 1
-                "h2" -> 2
-                "h3" -> 3
-                "h4" -> 4
-                "h5" -> 5
-                else -> 6
-            },
-            nextTextElement
+        when (tagName) {
+            "h1" -> 1
+            "h2" -> 2
+            "h3" -> 3
+            "h4" -> 4
+            "h5" -> 5
+            else -> 6
+        },
+        nextTextElement
     )
 
     override fun startTag(tag: String, attributes: Attributes): DisplayElement? {
@@ -721,8 +722,8 @@ class HeaderElement(
 }
 
 class VideoElement(
-        val video: Video,
-        val nextTextElement: ParagraphTextElement
+    val video: Video,
+    val nextTextElement: ParagraphTextElement
 ) : DisplayElement() {
     override fun startTag(tag: String, attributes: Attributes): DisplayElement? {
         return null
@@ -760,87 +761,87 @@ sealed class Placeholder {
 }
 
 data class Bold(
-        override val startIndex: Int,
-        override val endIndex: Int = -1
+    override val startIndex: Int,
+    override val endIndex: Int = -1
 ) : Placeholder() {
     override fun copyWithZeroStartIndex() = copy(startIndex = 0, endIndex = -1)
     override fun copyWithEndIndex(endIndex: Int) = copy(endIndex = endIndex)
 }
 
 data class Italic(
-        override val startIndex: Int,
-        override val endIndex: Int = -1
+    override val startIndex: Int,
+    override val endIndex: Int = -1
 ) : Placeholder() {
     override fun copyWithZeroStartIndex() = copy(startIndex = 0, endIndex = -1)
     override fun copyWithEndIndex(endIndex: Int) = copy(endIndex = endIndex)
 }
 
 data class Underline(
-        override val startIndex: Int,
-        override val endIndex: Int = -1
+    override val startIndex: Int,
+    override val endIndex: Int = -1
 ) : Placeholder() {
     override fun copyWithZeroStartIndex() = copy(startIndex = 0, endIndex = -1)
     override fun copyWithEndIndex(endIndex: Int) = copy(endIndex = endIndex)
 }
 
 data class Big(
-        override val startIndex: Int,
-        override val endIndex: Int = -1
+    override val startIndex: Int,
+    override val endIndex: Int = -1
 ) : Placeholder() {
     override fun copyWithZeroStartIndex() = copy(startIndex = 0, endIndex = -1)
     override fun copyWithEndIndex(endIndex: Int) = copy(endIndex = endIndex)
 }
 
 data class Small(
-        override val startIndex: Int,
-        override val endIndex: Int = -1
+    override val startIndex: Int,
+    override val endIndex: Int = -1
 ) : Placeholder() {
     override fun copyWithZeroStartIndex() = copy(startIndex = 0, endIndex = -1)
     override fun copyWithEndIndex(endIndex: Int) = copy(endIndex = endIndex)
 }
 
 data class Monospace(
-        override val startIndex: Int,
-        override val endIndex: Int = -1
+    override val startIndex: Int,
+    override val endIndex: Int = -1
 ) : Placeholder() {
     override fun copyWithZeroStartIndex() = copy(startIndex = 0, endIndex = -1)
     override fun copyWithEndIndex(endIndex: Int) = copy(endIndex = endIndex)
 }
 
 data class Super(
-        override val startIndex: Int,
-        override val endIndex: Int = -1
+    override val startIndex: Int,
+    override val endIndex: Int = -1
 ) : Placeholder() {
     override fun copyWithZeroStartIndex() = copy(startIndex = 0, endIndex = -1)
     override fun copyWithEndIndex(endIndex: Int) = copy(endIndex = endIndex)
 }
 
 data class Sub(
-        override val startIndex: Int,
-        override val endIndex: Int = -1
+    override val startIndex: Int,
+    override val endIndex: Int = -1
 ) : Placeholder() {
     override fun copyWithZeroStartIndex() = copy(startIndex = 0, endIndex = -1)
     override fun copyWithEndIndex(endIndex: Int) = copy(endIndex = endIndex)
 }
 
 data class Code(
-        override val startIndex: Int,
-        override val endIndex: Int = -1
+    override val startIndex: Int,
+    override val endIndex: Int = -1
 ) : Placeholder() {
     override fun copyWithZeroStartIndex() = copy(startIndex = 0, endIndex = -1)
     override fun copyWithEndIndex(endIndex: Int) = copy(endIndex = endIndex)
 }
 
 data class Font(
-        val color: String?,
-        val face: String?,
-        override val startIndex: Int,
-        override val endIndex: Int = -1
+    val color: String?,
+    val face: String?,
+    override val startIndex: Int,
+    override val endIndex: Int = -1
 ) : Placeholder() {
     constructor(attributes: Attributes, startIndex: Int) : this(
-            color = attributes.getValue("", "color"),
-            face = attributes.getValue("", "face"),
-            startIndex = startIndex
+        color = attributes.getValue("", "color"),
+        face = attributes.getValue("", "face"),
+        startIndex = startIndex
     )
 
     override fun copyWithZeroStartIndex() = copy(startIndex = 0, endIndex = -1)
@@ -848,16 +849,16 @@ data class Font(
 }
 
 data class Href(
-        val relativeUrl: String?,
-        override val startIndex: Int,
-        override val endIndex: Int = -1
+    val relativeUrl: String?,
+    override val startIndex: Int,
+    override val endIndex: Int = -1
 ) : Placeholder() {
     constructor(
-            attributes: Attributes,
-            startIndex: Int
+        attributes: Attributes,
+        startIndex: Int
     ) : this(
-            relativeUrl = attributes.getValue("", "href"),
-            startIndex = startIndex
+        relativeUrl = attributes.getValue("", "href"),
+        startIndex = startIndex
     )
 
     override fun copyWithZeroStartIndex() = copy(startIndex = 0, endIndex = -1)

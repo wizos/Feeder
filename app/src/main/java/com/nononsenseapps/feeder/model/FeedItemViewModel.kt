@@ -9,6 +9,7 @@ import android.text.style.ImageSpan
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.liveData
+import androidx.lifecycle.map
 import androidx.lifecycle.switchMap
 import androidx.lifecycle.viewModelScope
 import com.nononsenseapps.feeder.R
@@ -16,7 +17,9 @@ import com.nononsenseapps.feeder.base.KodeinAwareViewModel
 import com.nononsenseapps.feeder.blob.blobInputStream
 import com.nononsenseapps.feeder.db.room.FeedItemDao
 import com.nononsenseapps.feeder.db.room.FeedItemWithFeed
+import com.nononsenseapps.feeder.ui.text.DisplayElement
 import com.nononsenseapps.feeder.ui.text.UrlClickListener
+import com.nononsenseapps.feeder.ui.text.toFooRecycler
 import com.nononsenseapps.feeder.ui.text.toSpannedWithImages
 import com.nononsenseapps.feeder.ui.text.toSpannedWithNoImages
 import com.nononsenseapps.feeder.util.Prefs
@@ -27,6 +30,7 @@ import kotlinx.coroutines.withContext
 import org.kodein.di.Kodein
 import org.kodein.di.generic.instance
 import java.io.IOException
+import java.lang.Exception
 import java.net.URL
 import kotlin.math.roundToInt
 
@@ -47,66 +51,90 @@ class FeedItemViewModel(kodein: Kodein) : KodeinAwareViewModel(kodein) {
 
     private lateinit var liveImageText: LiveData<Spanned>
 
+    private lateinit var liveFooRecyclerStuff: LiveData<List<DisplayElement>>
+
+    fun getLiveFooRecyclerThins(
+        id: Long
+    ): LiveData<List<DisplayElement>> {
+        if (!this::liveFooRecyclerStuff.isInitialized) {
+            liveFooRecyclerStuff = liveData(context = viewModelScope.coroutineContext) {
+                try {
+                    withContext(Dispatchers.IO) {
+                        blobInputStream(
+                            itemId = id,
+                            filesDir = context.filesDir
+                        ).bufferedReader().use { reader ->
+                            emit(toFooRecycler(source = reader))
+                        }
+                    }
+                } catch (e: Exception) {
+                    TODO("Display error")
+                }
+            }
+        }
+        return liveFooRecyclerStuff
+    }
+
     fun getLiveImageText(
-            id: Long,
-            maxImageSize: Point,
-            urlClickListener: UrlClickListener?,
-            liveIsNightMode: LiveData<Boolean>
+        id: Long,
+        maxImageSize: Point,
+        urlClickListener: UrlClickListener?,
+        liveIsNightMode: LiveData<Boolean>
     ): LiveData<Spanned> {
         if (!this::liveImageText.isInitialized) {
             liveImageText = liveIsNightMode.switchMap { _ ->
                 liveData(context = viewModelScope.coroutineContext) {
                     // TODO resources
                     emit(
-                            SpannableString("Loading...")
+                        SpannableString("Loading...")
                     )
 
                     try {
                         withContext(Dispatchers.IO) {
                             val allowDownload = prefs.shouldLoadImages()
                             val feedUrl = dao.loadFeedUrlOfFeedItem(id = id)
-                                    ?: URL("https://missing.feedurl")
+                                ?: URL("https://missing.feedurl")
 
                             lateinit var noImages: Spanned
                             noImages = blobInputStream(
-                                    itemId = id,
-                                    filesDir = context.filesDir
+                                itemId = id,
+                                filesDir = context.filesDir
                             ).bufferedReader().use { reader ->
                                 toSpannedWithNoImages(
-                                        kodein = kodein,
-                                        source = reader,
-                                        siteUrl = feedUrl,
-                                        maxSize = maxImageSize,
-                                        urlClickListener = urlClickListener
+                                    kodein = kodein,
+                                    source = reader,
+                                    siteUrl = feedUrl,
+                                    maxSize = maxImageSize,
+                                    urlClickListener = urlClickListener
                                 )
                             }
                             emit(
-                                    noImages
+                                noImages
                             )
 
                             if (noImages.getAllImageSpans().isNotEmpty()) {
                                 val withImages = blobInputStream(
-                                        itemId = id,
-                                        filesDir = context.filesDir
+                                    itemId = id,
+                                    filesDir = context.filesDir
                                 ).bufferedReader().use { reader ->
                                     toSpannedWithImages(
-                                            kodein = kodein,
-                                            source = reader,
-                                            siteUrl = feedUrl,
-                                            maxSize = maxImageSize,
-                                            allowDownload = allowDownload,
-                                            urlClickListener = urlClickListener
+                                        kodein = kodein,
+                                        source = reader,
+                                        siteUrl = feedUrl,
+                                        maxSize = maxImageSize,
+                                        allowDownload = allowDownload,
+                                        urlClickListener = urlClickListener
                                     )
                                 }
                                 emit(
-                                        withImages
+                                    withImages
                                 )
                             }
                         }
                     } catch (e: IOException) {
                         // TODO resources
                         emit(
-                                SpannableString("Could not read blob for item with id [$id]")
+                            SpannableString("Could not read blob for item with id [$id]")
                         )
                     }
                 }
@@ -134,4 +162,4 @@ internal fun Activity.maxImageSize(): Point {
 }
 
 private fun Spanned.getAllImageSpans(): Array<out ImageSpan> =
-        getSpans(0, length, ImageSpan::class.java) ?: emptyArray()
+    getSpans(0, length, ImageSpan::class.java) ?: emptyArray()

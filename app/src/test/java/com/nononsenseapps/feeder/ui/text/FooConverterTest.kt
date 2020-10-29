@@ -23,24 +23,24 @@ class FooConverterTest {
         """.trimIndent()
 
         val converter = FooConverter(
-                content.reader(),
-                parser
+            content.reader(),
+            parser
         )
 
         val rawResult = converter.convert()
 
         assertEquals(
-                7,
-                rawResult.size,
-                "$rawResult"
+            7,
+            rawResult.size,
+            "$rawResult"
         )
 
         val filtered = rawResult.filter { it.isVisible }
 
         assertEquals(
-                1,
-                filtered.size,
-                "$filtered"
+            1,
+            filtered.size,
+            "$filtered"
         )
     }
 
@@ -53,24 +53,24 @@ class FooConverterTest {
         """.trimIndent()
 
         val converter = FooConverter(
-                content.reader(),
-                parser
+            content.reader(),
+            parser
         )
 
         val rawResult = converter.convert()
 
         assertEquals(
-                7,
-                rawResult.size,
-                "$rawResult"
+            7,
+            rawResult.size,
+            "$rawResult"
         )
 
         val filtered = rawResult.filter { it.isVisible }
 
         assertEquals(
-                1,
-                filtered.size,
-                "$filtered"
+            1,
+            filtered.size,
+            "$filtered"
         )
     }
 
@@ -85,8 +85,8 @@ class FooConverterTest {
         """.trimIndent()
 
         val converter = FooConverter(
-                content.reader(),
-                parser
+            content.reader(),
+            parser
         )
 
         val table = converter.convert().filterIsInstance(TableElement::class.java).single()
@@ -105,8 +105,8 @@ class FooConverterTest {
         """.trimIndent()
 
         val converter = FooConverter(
-                content.reader(),
-                parser
+            content.reader(),
+            parser
         )
 
         val table = converter.convert().filterIsInstance(TableElement::class.java).single()
@@ -126,13 +126,13 @@ class FooConverterTest {
         """.trimIndent()
 
         val converter = FooConverter(
-                content.reader(),
-                parser
+            content.reader(),
+            parser
         )
 
         val quote = converter.convert().filterIsInstance(BlockQuoteElement::class.java).single()
 
-        assertFalse{
+        assertFalse {
             quote.isVisible
         }
 
@@ -148,13 +148,13 @@ class FooConverterTest {
         """.trimIndent()
 
         val converter = FooConverter(
-                content.reader(),
-                parser
+            content.reader(),
+            parser
         )
 
         val quote = converter.convert().filterIsInstance(BlockQuoteElement::class.java).single()
 
-        assertTrue{
+        assertTrue {
             quote.isVisible
         }
 
@@ -170,13 +170,13 @@ class FooConverterTest {
         """.trimIndent()
 
         val converter = FooConverter(
-                content.reader(),
-                parser
+            content.reader(),
+            parser
         )
 
         val header = converter.convert().filterIsInstance(HeaderElement::class.java).single()
 
-        assertFalse{
+        assertFalse {
             header.isVisible
         }
     }
@@ -193,8 +193,8 @@ class FooConverterTest {
         """.trimIndent()
 
         val converter = FooConverter(
-                content.reader(),
-                parser
+            content.reader(),
+            parser
         )
 
         val headers = converter.convert().filterIsInstance(HeaderElement::class.java)
@@ -202,7 +202,7 @@ class FooConverterTest {
         assertEquals(6, headers.size)
 
         headers.forEachIndexed { index, headerElement ->
-            assertTrue{
+            assertTrue {
                 headerElement.isVisible
             }
 
@@ -219,13 +219,13 @@ class FooConverterTest {
         """.trimIndent()
 
         val converter = FooConverter(
-                content.reader(),
-                parser
+            content.reader(),
+            parser
         )
 
         val list = converter.convert().filterIsInstance(ListElement::class.java).single()
 
-        assertFalse{
+        assertFalse {
             list.isVisible
         }
     }
@@ -240,8 +240,8 @@ class FooConverterTest {
         """.trimIndent()
 
         val converter = FooConverter(
-                content.reader(),
-                parser
+            content.reader(),
+            parser
         )
 
         val list = converter.convert().filterIsInstance(ListElement::class.java).single()
@@ -262,13 +262,13 @@ class FooConverterTest {
         """.trimIndent()
 
         val converter = FooConverter(
-                content.reader(),
-                parser
+            content.reader(),
+            parser
         )
 
         val list = converter.convert().filterIsInstance(ListElement::class.java).single()
 
-        assertFalse{
+        assertFalse {
             list.isVisible
         }
     }
@@ -283,8 +283,8 @@ class FooConverterTest {
         """.trimIndent()
 
         val converter = FooConverter(
-                content.reader(),
-                parser
+            content.reader(),
+            parser
         )
 
         val list = converter.convert().filterIsInstance(ListElement::class.java).single()
@@ -303,8 +303,8 @@ class FooConverterTest {
         """.trimIndent()
 
         val converter = FooConverter(
-                content.reader(),
-                parser
+            content.reader(),
+            parser
         )
 
         val list = converter.convert()
@@ -320,8 +320,8 @@ class FooConverterTest {
         """.trimIndent()
 
         val converter = FooConverter(
-                content.reader(),
-                parser
+            content.reader(),
+            parser
         )
 
         val list = converter.convert()
@@ -337,15 +337,15 @@ class FooConverterTest {
         """.trimIndent()
 
         val converter = FooConverter(
-                content.reader(),
-                parser
+            content.reader(),
+            parser
         )
 
         val videoElement = converter.convert().filterIsInstance(VideoElement::class.java).single()
 
         assertEquals(
-                "http://www.youtube.com/embed/cjxnVO9RpaQ/theoretical_crap",
-                videoElement.video.src
+            "http://www.youtube.com/embed/cjxnVO9RpaQ/theoretical_crap",
+            videoElement.video.src
         )
     }
 }
