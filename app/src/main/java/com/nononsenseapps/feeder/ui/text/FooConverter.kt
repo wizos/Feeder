@@ -292,9 +292,9 @@ open class ParagraphTextElement(
                     attributes,
                     nextTextElement = closeTagsAndReturnEmptyClone()
             )
-            "h1", "h2", "h3", "h4", "h5", "h6" -> TODO("header")
-            "ul" -> TODO("unorderd list")
-            "ol" -> TODO("ordered list")
+            "h1", "h2", "h3", "h4", "h5", "h6" -> HeaderElement(tag, closeTagsAndReturnEmptyClone())
+            "ul" -> ListElement(false, closeTagsAndReturnEmptyClone())
+            "ol" -> ListElement(true, closeTagsAndReturnEmptyClone())
             "pre" -> startFormattedParagraph()
             "iframe" -> TODO("iframe")
             "table" -> TableElement(
@@ -538,6 +538,78 @@ class TableElement(
     override fun hashCode(): Int {
         return System.identityHashCode(this)
     }
+}
+
+class ListElement(
+        val ordered: Boolean,
+        val nextTextElement: ParagraphTextElement
+) : DisplayElement() {
+    private val items: MutableList<StringBuilder> = mutableListOf()
+    private var currentItem: StringBuilder? = null
+
+    fun getRows(): List<String> =
+            items.map { item -> item.toString() }
+
+    override fun startTag(tag: String, attributes: Attributes): DisplayElement? {
+        when (tag) {
+            "li" -> {
+                val item = StringBuilder()
+                items.add(item)
+                currentItem = item
+            }
+        }
+        return null
+    }
+
+    override fun endTag(tag: String): DisplayElement? {
+        when (tag) {
+            "li" -> currentItem = null
+        }
+
+        return when (tag) {
+            "ul", "ol" -> nextTextElement
+            else -> null
+        }
+    }
+
+    override fun characters(chars: CharArray, start: Int, length: Int) {
+        if (currentItem == null) {
+            return
+        }
+
+        for (index in start until (start + length)) {
+            val char = chars[index]
+            val prev = currentItem?.lastOrNull()
+
+            when {
+                char.isWhitespace() && prev?.isWhitespace() == false -> {
+                    currentItem?.append(' ')
+                }
+                !char.isWhitespace() -> {
+                    currentItem?.append(char)
+                }
+            }
+        }
+    }
+
+    override val isVisible: Boolean
+        get() {
+            for (item in items) {
+                if (item.isNotBlank()) {
+                    return true
+                }
+            }
+
+            return false
+        }
+
+    override fun equals(other: Any?): Boolean {
+        return this === other
+    }
+
+    override fun hashCode(): Int {
+        return System.identityHashCode(this)
+    }
 
 }
 
@@ -587,7 +659,61 @@ class BlockQuoteElement(
         get() = stringBuilder.isNotBlank()
 
     fun getText(): String = stringBuilder.toString()
+}
 
+class HeaderElement(
+        val level: Int,
+        val nextTextElement: ParagraphTextElement
+) : DisplayElement() {
+    private val stringBuilder = StringBuilder()
+
+    constructor(
+            tagName: String,
+            nextTextElement: ParagraphTextElement
+    ) : this(
+            when (tagName) {
+                "h1" -> 1
+                "h2" -> 2
+                "h3" -> 3
+                "h4" -> 4
+                "h5" -> 5
+                else -> 6
+            },
+            nextTextElement
+    )
+
+    override fun startTag(tag: String, attributes: Attributes): DisplayElement? {
+        return null
+    }
+
+    override fun endTag(tag: String): DisplayElement? {
+        return if (tag == "h$level") {
+            nextTextElement
+        } else {
+            null
+        }
+    }
+
+    override fun characters(chars: CharArray, start: Int, length: Int) {
+        for (index in start until (start + length)) {
+            val char = chars[index]
+            val prev = stringBuilder.lastOrNull()
+
+            when {
+                char.isWhitespace() && prev?.isWhitespace() == false -> {
+                    stringBuilder.append(' ')
+                }
+                !char.isWhitespace() -> {
+                    stringBuilder.append(char)
+                }
+            }
+        }
+    }
+
+    override val isVisible: Boolean
+        get() = stringBuilder.isNotBlank()
+
+    fun getText(): String = stringBuilder.toString()
 }
 
 ////////////// TODO move below ///////////////////////////
