@@ -1,19 +1,19 @@
-<p>Are you sick of bloated non-free readers that steal your personal information?<br/>
-Are you tired of convoluted syncing setups requiring hours of server configuration?<br/>
-Are you fed up with having to create accounts everywhere?<br/></p>
+<p>Dosadili su Vam čitači koji nisu besplatni i uz to kradu Vaše lične informacije?<br/>
+Umorni ste od komplikovanih postavki za sinhronizaciju, koje zahtjevaju sate za konfiguraciju servera?<br/>
+Dosta Vam je kreiranja naloga svuda?<br/></p>
 
-<p>Try Feeder instead!</p>
+<p>Umjesto toga probajte Feeder!</p>
 
-<p>Feeder is a fully free/libre feed reader. It supports all common feed formats, including JSONFeed. It doesn't track you. It doesn't require any setup. It doesn't even need you to create an account! Just setup your feeds, or import them from your old reader via OPML, then get on with syncing and reading.</p>
+<p>Feeder je potpuno besplatan čitač izvora (feedova) vijesti. Podržava sve uobičajene formate feedova, uključujući JSONFeed. Ne prati vaše aktivnosti. Ne traži nikakvo postavljanje. Također ne traži od Vas da kreirate nalog! Samo trebate postaviti svoje izvore (feedove) ili ih uvesti iz starog čitača putem OPML-a, i već možete nastaviti sinhronizaciju i čitanje.</p>
 
-<p><b>Features</b></p>
+<p><b>Mogućnosti</b></p>
 
 <ul>
-<li>Parses HTML and displays it in a native TextView</li>
-<li>Offline reading</li>
-<li>Background synchronization</li>
-<li>Notifications</li>
-<li>OPML Import/Export</li>
-<li>Handy access to enclosure links</li>
-<li>Material design</li>
+<li>Raščanjivanje HTML-a i prikaz u nativnom tekstualnom pregledniku (TextView)</li>
+<li>Vanmrežno čitanje</li>
+<li>Pozadinska sinhronizacija</li>
+<li>Obavijesti</li>
+<li>Uvoz/izvoz OPML-a</li>
+<li>Praktičan pristup priloženim vezama</li>
+<li>Materijalni dizajn</li>
 </ul>
