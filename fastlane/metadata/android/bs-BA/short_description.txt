@@ -1,1 +1,1 @@
-An awesome Free and Open Source RSS Feed reader
+Fantastičan, otvorenog koda i besplatan RSS čitač izvora (feedova)
